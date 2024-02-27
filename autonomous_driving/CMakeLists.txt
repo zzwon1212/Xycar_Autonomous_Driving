@@ -1,21 +1,24 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(LaneKeepingSystem)
+project(autonomous_driving)
 
-SET(CMAKE_CXX_STANDARD 17)
-SET(CMAKE_CXX_STANDARD_REQUIRED ON)
+## Compile as C++11, supported in ROS Kinetic and newer
+# add_compile_options(-std=c++11)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set (OpenCV_DIR /usr/share/OpenCV)
-
+## Find catkin macros and libraries
+## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
+## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  # message_generation #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
   roscpp
   sensor_msgs
-  std_msgs
-  xycar_msgs
-  message_generation
+  # std_msgs @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+  xycar_msgs #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 )
+find_package(yaml-cpp REQUIRED) #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+find_package(OpenCV 4.5.5 REQUIRED PATHS /usr/local/lib/cmake/opencv4)  # old: 4.5.5
 
-find_package(yaml-cpp REQUIRED)
-find_package(OpenCV 4.5.5 REQUIRED PATHS ~/OpenCV4/install/lib/cmake/opencv4)
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
@@ -52,8 +55,8 @@ find_package(OpenCV 4.5.5 REQUIRED PATHS ~/OpenCV4/install/lib/cmake/opencv4)
 ## Generate messages in the 'msg' folder
 # add_message_files(
 #   FILES
-#   BoundingBox.msg
-#   BoundingBoxes.msg
+#   Message1.msg
+#   Message2.msg
 # )
 
 ## Generate services in the 'srv' folder
@@ -71,26 +74,9 @@ find_package(OpenCV 4.5.5 REQUIRED PATHS ~/OpenCV4/install/lib/cmake/opencv4)
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages( DEPENDENCIES std_msgs )
-
-################################################
-## Declare ROS dynamic reconfigure parameters ##
-################################################
-
-## To declare and build dynamic reconfigure parameters within this
-## package, follow these steps:
-## * In the file package.xml:
-##   * add a build_depend and a exec_depend tag for "dynamic_reconfigure"
-## * In this file (CMakeLists.txt):
-##   * add "dynamic_reconfigure" to
-##     find_package(catkin REQUIRED COMPONENTS ...)
-##   * uncomment the "generate_dynamic_reconfigure_options" section below
-##     and list every .cfg file to be processed
-
-## Generate dynamic reconfigure parameters in the 'cfg' folder
-# generate_dynamic_reconfigure_options(
-#   cfg/DynReconf1.cfg
-#   cfg/DynReconf2.cfg
+# generate_messages(
+#   DEPENDENCIES
+#   sensor_msgs
 # )
 
 ###################################
@@ -103,10 +89,10 @@ find_package(OpenCV 4.5.5 REQUIRED PATHS ~/OpenCV4/install/lib/cmake/opencv4)
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  CATKIN_DEPENDS message_runtime
 #  INCLUDE_DIRS include
-#  LIBRARIES LaneKeepingSystem
-#  CATKIN_DEPENDS OpenCV roscpp sensor_msgs std_msgs xycar_msgs
+#  INCLUDE_DIRS include
+#  LIBRARIES autonomous_driving
+#  CATKIN_DEPENDS message_generation roscpp sensor_msgs
 #  DEPENDS system_lib
 )
 
@@ -123,18 +109,23 @@ include_directories(
   ${YAML_CPP_INCLUDE_DIR}
 )
 
+## Declare a C++ library
+# add_library(${PROJECT_NAME} #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 add_library(modules
-  src/${PROJECT_NAME}/LaneDetector.cpp
-  src/${PROJECT_NAME}/MovingAverageFilter.cpp
-  src/${PROJECT_NAME}/PIDController.cpp
-  src/${PROJECT_NAME}/LaneKeepingSystem.cpp
+  src/driving.cpp
+  src/lane_detector.cpp
+  src/PID_controller.cpp
 )
 
+## Declare a C++ executable
+## With catkin_make all packages are built within a single CMake context
+## The recommended prefix ensures that target names across packages don't collide
 add_executable(${PROJECT_NAME}_node src/main.cpp)
 
+## Specify libraries to link a library or executable target against
 target_link_libraries(${PROJECT_NAME}_node
   modules
-  ${YAML_CPP_LIBRARIES}
   ${catkin_LIBRARIES}
+  ${YAML_CPP_LIBRARIES} #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
   ${OpenCV_LIBRARIES}
 )
