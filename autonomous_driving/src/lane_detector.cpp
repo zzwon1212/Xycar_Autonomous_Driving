@@ -25,60 +25,77 @@ std::tuple<cv::Point, cv::Point, bool, bool> LaneDetector<PREC>::getLinePosition
     cv::Point left, right;
     bool is_left_detected, is_right_detected;
 
-    if ((!left_x_at_Y_offset.empty()) && (left_x_at_Y_offset.size() < 6)) {
+    if ((!left_x_at_Y_offset.empty()) && (left_x_at_Y_offset.size() < 6))
+    {
         int left_lx = *min_element(left_x_at_Y_offset.begin(), left_x_at_Y_offset.end());
         int left_rx = *max_element(left_x_at_Y_offset.begin(), left_x_at_Y_offset.end());
 
-        if ((left_rx-left_lx > 50) && (left_x_at_Y_offset.size() != 1)) left_lx = left_rx - 50;
+        if ((left_rx-left_lx > 50) && (left_x_at_Y_offset.size() != 1))
+        {
+            left_lx = left_rx - 50;
+        }
 
         left = cv::Point((left_lx + left_rx)/2, tmp_y_offset_);
         prev_left_ = left;
         leftC_ = 0;
         is_left_detected = true;
-    } else {
+    }
+    else
+    {
         left = prev_left_;
         leftC_ += 1;
         is_left_detected = false;
     }
 
-    if ((!right_x_at_Y_offset.empty()) && (right_x_at_Y_offset.size() < 6)) {
+    if ((!right_x_at_Y_offset.empty()) && (right_x_at_Y_offset.size() < 6))
+    {
         int right_lx = *min_element(right_x_at_Y_offset.begin(), right_x_at_Y_offset.end());
         int right_rx = *max_element(right_x_at_Y_offset.begin(), right_x_at_Y_offset.end());
 
-        if ((right_rx-right_lx > 50) && (right_x_at_Y_offset.size() != 1)) right_rx = right_lx + 50;
+        if ((right_rx-right_lx > 50) && (right_x_at_Y_offset.size() != 1))
+        {
+            right_rx = right_lx + 50;
+        }
 
         right = cv::Point((right_lx + right_rx)/2, tmp_y_offset_);
         prev_right_ = right;
         rightC_ = 0;
         is_right_detected = true;
-    } else {
+    }
+    else
+    {
         right = prev_right_;
         rightC_ += 1;
         is_right_detected = false;
     }
 
     // If points are too close
-    if (abs(right.x - left.x) < 300) {  // 300 100
-        if (rightC_ != 0) {
+    if (abs(right.x - left.x) < 300)  // 300 100
+    {
+        if (rightC_ != 0)
+        {
             right.x = 640;
             // right.x = left.x +300;
             prev_right_ = right;
         }
 
-        if (leftC_ != 0) {
+        if (leftC_ != 0)
+        {
             left.x = 0;
             // left.x = right.x -300;
             prev_left_ = left;
         }
     }
 
-    if (left.x > 240) {
+    if (left.x > 240)
+    {
         right.x += 50;
         prev_right_.x += 1;
         rightC_ = 0;
     }
 
-    if (right.x < 400) {
+    if (right.x < 400)
+    {
         left.x -= 50;
         prev_left_.x -=1;
         leftC_ = 0;
@@ -95,22 +112,31 @@ std::pair<std::vector<int>, std::vector<int>> LaneDetector<PREC>::divideLeftRigh
     std::vector<int> left_x_at_Y_offset, right_x_at_Y_offset;
     double slope;
 
-    for (cv::Vec4f line_ : lines) {
+    for (cv::Vec4f line_ : lines)
+    {
         cv::Point pt1(line_[0], line_[1]);
         cv::Point pt2(line_[2], line_[3]);
         slope = (double)(pt2.y - pt1.y)/(pt2.x - pt1.x + 0.0001);
 
-        if (abs(slope) > 0 && abs(slope) < 10) {
+        if (abs(slope) > 0 && abs(slope) < 10)
+        {
             int x_at_Y_offset;
-            if (pt1.x != pt2.x) {
+            if (pt1.x != pt2.x)
+            {
                 x_at_Y_offset = (tmp_y_offset_ - pt1.y) / slope + pt1.x;
-            } else {
+            }
+            else
+            {
                 x_at_Y_offset = pt1.x;
             }
 
-            if (slope < 0 && x_at_Y_offset < 280) {  //250
+            if (slope < 0 && x_at_Y_offset < 280)  //250
+            {
                 left_x_at_Y_offset.push_back(x_at_Y_offset);
-            } else if (slope > 0 && x_at_Y_offset > 360) {  //380
+            }
+            else if
+            (slope > 0 && x_at_Y_offset > 360)  //380
+            {
                 right_x_at_Y_offset.push_back(x_at_Y_offset);
             }
         }
@@ -148,7 +174,8 @@ std::tuple<double, bool, bool> LaneDetector<PREC>::getLaneInfo(cv::Mat& frame)
     bool is_left_detected, is_right_detected;
     std::tie(left, right, is_left_detected, is_right_detected) = getLinePosition(left_lines, right_lines);
 
-    if (is_debugging_) {
+    if (is_debugging_)
+    {
         // draw parts
         mask.copyTo(debugging_roi_);
         frame.copyTo(debugging_frame_);
@@ -162,7 +189,8 @@ std::tuple<double, bool, bool> LaneDetector<PREC>::getLaneInfo(cv::Mat& frame)
 template <typename PREC>
 void LaneDetector<PREC>::drawLines(std::vector<cv::Vec4f>& lines)
 {
-    for (auto& line : lines) {
+    for (auto& line : lines)
+    {
         int x1, y1, x2, y2;
         std::tie(x1, y1, x2, y2) = std::make_tuple(line[0], line[1], line[2], line[3]);
         cv::line(debugging_frame_, cv::Point(x1, y1), cv::Point(x2, y2), RED, 2);

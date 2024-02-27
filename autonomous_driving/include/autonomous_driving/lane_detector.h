@@ -19,7 +19,8 @@ public:
     static inline const cv::Scalar GREEN = {0, 255, 0};
     static inline const cv::Scalar BLUE = {255, 0, 0};
 
-    LaneDetector(const YAML::Node& config) {
+    LaneDetector(const YAML::Node& config)
+    {
         setConfig(config);
         prev_left_ = cv::Point(0, tmp_y_offset_);
         prev_right_ = cv::Point(img_width_, y_offset_);

@@ -3,7 +3,8 @@
 
 #include <cstdint>
 
-namespace xycar {
+namespace xycar
+{
 /**
  * @brief PID Controller Class
  * @tparam PREC Precision of data
@@ -21,7 +22,10 @@ public:
      * @param[in] I Integral control gain to remove error of steady-state
      * @param[in] D Differential control gain to relieve overshoot and improve stability
      */
-    PIDController(PREC P, PREC I, PREC D) : gain_P_(P), gain_I_(I), gain_D_(D) {}
+    PIDController(PREC P, PREC I, PREC D) :
+        gain_P_(P), gain_I_(I), gain_D_(D)
+    {
+    }
 
     /**
      * @brief Compute and return the PID Control Output

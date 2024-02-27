@@ -62,16 +62,19 @@ void Driving<PREC>::run()
     ros::Rate rate(FPS);
     // int isFirstFrame = True;
 
-    while (ros::ok()) {
+    while (ros::ok())
+    {
         ros::spinOnce();
 
         // Wait until receiving image
-        if (frame_.empty()) {
+        if (frame_.empty())
+        {
             continue;
         }
 
         // Wait until object detection starts
-        if (nearest_object_.empty()) {
+        if (nearest_object_.empty())
+        {
             continue;
         }
 
