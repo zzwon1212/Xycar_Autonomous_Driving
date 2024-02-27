@@ -29,7 +29,7 @@ public:
      * @param[in] gap_between_laneNcar_ Error between estimated position x and half of the image
      * @return The result of PID controller
      */
-    PREC GetPIDOutput(int32_t gap_between_laneNcar_);
+    PREC getPIDOutput(int32_t gap_between_laneNcar_);
 
 private:
     const PREC gain_P_;  // Proportional control gain. The higher, the more powerful

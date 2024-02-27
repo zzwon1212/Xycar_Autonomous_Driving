@@ -4,7 +4,7 @@
 namespace xycar
 {
 template <typename PREC>
-void LaneDetector<PREC>::SetConfig(const YAML::Node& config)
+void LaneDetector<PREC>::setConfig(const YAML::Node& config)
 {
     img_width_ = config["IMAGE"]["WIDTH"].as<int32_t>();
     img_height_ = config["IMAGE"]["HEIGHT"].as<int32_t>();
@@ -20,7 +20,7 @@ void LaneDetector<PREC>::SetConfig(const YAML::Node& config)
 }
 
 template <typename PREC>
-std::tuple<cv::Point, cv::Point, bool, bool> LaneDetector<PREC>::GetLinePosition(std::vector<int>& left_x_at_Y_offset, std::vector<int>& right_x_at_Y_offset)
+std::tuple<cv::Point, cv::Point, bool, bool> LaneDetector<PREC>::getLinePosition(std::vector<int>& left_x_at_Y_offset, std::vector<int>& right_x_at_Y_offset)
 {
     cv::Point left, right;
     bool is_left_detected, is_right_detected;
@@ -90,7 +90,7 @@ std::tuple<cv::Point, cv::Point, bool, bool> LaneDetector<PREC>::GetLinePosition
 }
 
 template <typename PREC>
-std::pair<std::vector<int>, std::vector<int>> LaneDetector<PREC>::DivideLeftRight(std::vector<cv::Vec4f>& lines)
+std::pair<std::vector<int>, std::vector<int>> LaneDetector<PREC>::divideLeftRight(std::vector<cv::Vec4f>& lines)
 {
     std::vector<int> left_x_at_Y_offset, right_x_at_Y_offset;
     double slope;
@@ -119,7 +119,7 @@ std::pair<std::vector<int>, std::vector<int>> LaneDetector<PREC>::DivideLeftRigh
 }
 
 template <typename PREC>
-std::tuple<double, bool, bool> LaneDetector<PREC>::GetLaneInfo(cv::Mat& frame)
+std::tuple<double, bool, bool> LaneDetector<PREC>::getLaneInfo(cv::Mat& frame)
 {
     // Set ROI
     // @@@@@@@@@@@@@@@@@@@@@@@@2 TODO: Find more efficient code
@@ -142,25 +142,25 @@ std::tuple<double, bool, bool> LaneDetector<PREC>::GetLaneInfo(cv::Mat& frame)
     cv::HoughLinesP(img_binary, lines, 1, CV_PI/180, min_pixel_, min_line_, max_gap_);
 
     std::vector<int> left_lines, right_lines;
-    std::tie(left_lines, right_lines) = DivideLeftRight(lines);
+    std::tie(left_lines, right_lines) = divideLeftRight(lines);
 
     cv::Point left, right;
     bool is_left_detected, is_right_detected;
-    std::tie(left, right, is_left_detected, is_right_detected) = GetLinePosition(left_lines, right_lines);
+    std::tie(left, right, is_left_detected, is_right_detected) = getLinePosition(left_lines, right_lines);
 
     if (is_debugging_) {
         // draw parts
         mask.copyTo(debugging_roi_);
         frame.copyTo(debugging_frame_);
-        DrawLines(lines);
-        DrawRectangle(left.x, right.x);
+        drawLines(lines);
+        drawRectangle(left.x, right.x);
     }
 
     return std::make_tuple(static_cast<double>(left.x + right.x)/2 + 30, is_left_detected, is_right_detected);
 }
 
 template <typename PREC>
-void LaneDetector<PREC>::DrawLines(std::vector<cv::Vec4f>& lines)
+void LaneDetector<PREC>::drawLines(std::vector<cv::Vec4f>& lines)
 {
     for (auto& line : lines) {
         int x1, y1, x2, y2;
@@ -170,7 +170,7 @@ void LaneDetector<PREC>::DrawLines(std::vector<cv::Vec4f>& lines)
 }
 
 template <typename PREC>
-void LaneDetector<PREC>::DrawRectangle(int left_x, int right_x)
+void LaneDetector<PREC>::drawRectangle(int left_x, int right_x)
 {
     int center_x = (left_x + right_x)/2;
     cv::rectangle(debugging_frame_, cv::Point(left_x - 5, tmp_y_offset_- 5), cv::Point(left_x + 5, tmp_y_offset_ + 5), kGreen, 2, cv::LINE_AA);

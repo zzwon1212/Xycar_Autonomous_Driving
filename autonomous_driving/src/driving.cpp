@@ -22,7 +22,7 @@ Driving<PREC>::Driving()
 }
 
 template <typename PREC>
-void Driving<PREC>::SetParams(const YAML::Node& config)
+void Driving<PREC>::setParams(const YAML::Node& config)
 {
 // //     mPublishingTopicName = config["TOPIC"]["PUB_NAME"].as<std::string>();
 // //     mSubscribedTopicName = config["TOPIC"]["SUB_NAME"].as<std::string>();
@@ -78,9 +78,9 @@ void Driving<PREC>::run()
         // Get appropriate steering angle to drive at current frame
         double lane_center;
         bool is_left_detected, is_right_detected;
-        std::tie(lane_center, is_left_detected, is_right_detected) = LaneDetector_ -> GetLaneInfo(frame_);
+        std::tie(lane_center, is_left_detected, is_right_detected) = LaneDetector_ -> getLaneInfo(frame_);
         double gap = (lane_center - frame_.cols/2);  // @@@@@@@@@@@@@@@@ TODO: Any error?
-        auto steering_angle = std::max(std::min(kSteeringAngleLimit, (int32_t) PID_ -> GetPIDOutput(gap)), -1 * kSteeringAngleLimit);
+        auto steering_angle = std::max(std::min(kSteeringAngleLimit, (int32_t) PID_ -> getPIDOutput(gap)), -1 * kSteeringAngleLimit);
         tmp_deceleration_step_ = std::round(std::abs(gap) / 10) * deceleration_step_;
 
         xycar_msgs::xycar_motor motorMessage;

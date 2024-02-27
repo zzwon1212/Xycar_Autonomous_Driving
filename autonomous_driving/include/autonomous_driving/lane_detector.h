@@ -20,13 +20,13 @@ public:
     static inline const cv::Scalar kBlue = {255, 0, 0};
 
     LaneDetector(const YAML::Node& config) {
-        SetConfig(config);
+        setConfig(config);
         prev_left_ = cv::Point(0, tmp_y_offset_);
         prev_right_ = cv::Point(img_width_, y_offset_);
         leftC_ = 0;
         rightC_ = 0;
     }
-    std::tuple<double, bool, bool> GetLaneInfo(cv::Mat& frame);
+    std::tuple<double, bool, bool> getLaneInfo(cv::Mat& frame);
 
     // @@@@@@@@@@@@ ??????????????????
     // void setYOffset(double speed){tmp_y_offset_ = y_offset_ - speed * y_gain_;}
@@ -42,11 +42,11 @@ private:
     int leftC_, rightC_;
     cv::Mat debugging_frame_, debugging_roi_;
 
-    void SetConfig(const YAML::Node& config);
-    std::pair<std::vector<int>, std::vector<int>> DivideLeftRight(std::vector<cv::Vec4f>& lines);
-    std::tuple<cv::Point, cv::Point, bool, bool> GetLinePosition(std::vector<int>& left_x_at_Y_offset, std::vector<int>& right_x_at_Y_offset);
-    void DrawLines(std::vector<cv::Vec4f>& lines);
-    void DrawRectangle(int32_t left_x, int32_t right_x);
+    void setConfig(const YAML::Node& config);
+    std::pair<std::vector<int>, std::vector<int>> divideLeftRight(std::vector<cv::Vec4f>& lines);
+    std::tuple<cv::Point, cv::Point, bool, bool> getLinePosition(std::vector<int>& left_x_at_Y_offset, std::vector<int>& right_x_at_Y_offset);
+    void drawLines(std::vector<cv::Vec4f>& lines);
+    void drawRectangle(int32_t left_x, int32_t right_x);
 };
 }  // namespace xycar
 
