@@ -45,7 +45,8 @@ private:
 
     void setConfig(const YAML::Node& config);
     std::pair<std::vector<int>, std::vector<int>> divideLeftRight(std::vector<cv::Vec4f>& lines);
-    std::tuple<cv::Point, cv::Point, bool, bool> getLinePosition(std::vector<int>& left_x_at_Y_offset, std::vector<int>& right_x_at_Y_offset);
+    std::tuple<cv::Point, cv::Point, bool, bool> getLinePosition(std::vector<int>& left_x_at_Y_offset,
+                                                                 std::vector<int>& right_x_at_Y_offset);
     void drawLines(std::vector<cv::Vec4f>& lines);
     void drawRectangle(int32_t left_x, int32_t right_x);
 };

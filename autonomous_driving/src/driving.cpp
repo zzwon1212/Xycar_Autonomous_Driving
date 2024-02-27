@@ -10,7 +10,9 @@ Driving<PREC>::Driving()
     YAML::Node config = YAML::LoadFile(config_path);
 
     LaneDetector_ = new LaneDetector<PREC>(config);
-    PID_ = new PIDController<PREC>(config["PID"]["P_GAIN"].as<PREC>(), config["PID"]["I_GAIN"].as<PREC>(), config["PID"]["D_GAIN"].as<PREC>());
+    PID_ = new PIDController<PREC>(config["PID"]["P_GAIN"].as<PREC>(),
+                                   config["PID"]["I_GAIN"].as<PREC>(),
+                                   config["PID"]["D_GAIN"].as<PREC>());
 //     // mMovingAverage = new MovingAverageFilter<PREC>(config["MOVING_AVERAGE_FILTER"]["SAMPLE_SIZE"].as<uint32_t>());
 
 //     // setParams(config);
@@ -83,7 +85,9 @@ void Driving<PREC>::run()
         bool is_left_detected, is_right_detected;
         std::tie(lane_center, is_left_detected, is_right_detected) = LaneDetector_ -> getLaneInfo(frame_);
         double gap = (lane_center - frame_.cols/2);  // @@@@@@@@@@@@@@@@ TODO: Any error?
-        auto steering_angle = std::max(std::min(STEERING_ANGLE_LIMIT, (int32_t) PID_ -> getPIDOutput(gap)), -1 * STEERING_ANGLE_LIMIT);
+        auto steering_angle = std::max(std::min(STEERING_ANGLE_LIMIT,
+                                                (int32_t) PID_ -> getPIDOutput(gap)),
+                                                -1 * STEERING_ANGLE_LIMIT);
         tmp_deceleration_step_ = std::round(std::abs(gap) / 10) * deceleration_step_;
 
         xycar_msgs::xycar_motor motorMessage;

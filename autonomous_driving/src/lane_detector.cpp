@@ -20,7 +20,8 @@ void LaneDetector<PREC>::setConfig(const YAML::Node& config)
 }
 
 template <typename PREC>
-std::tuple<cv::Point, cv::Point, bool, bool> LaneDetector<PREC>::getLinePosition(std::vector<int>& left_x_at_Y_offset, std::vector<int>& right_x_at_Y_offset)
+std::tuple<cv::Point, cv::Point, bool, bool> LaneDetector<PREC>::getLinePosition(std::vector<int>& left_x_at_Y_offset,
+                                                                                 std::vector<int>& right_x_at_Y_offset)
 {
     cv::Point left, right;
     bool is_left_detected, is_right_detected;
@@ -201,14 +202,34 @@ template <typename PREC>
 void LaneDetector<PREC>::drawRectangle(int left_x, int right_x)
 {
     int center_x = (left_x + right_x)/2;
-    cv::rectangle(debugging_frame_, cv::Point(left_x - 5, tmp_y_offset_- 5), cv::Point(left_x + 5, tmp_y_offset_ + 5), GREEN, 2, cv::LINE_AA);
-    putText(debugging_frame_, cv::format("(%d, %d, left)", left_x, tmp_y_offset_), cv::Point(left_x, tmp_y_offset_ - 20), cv::FONT_HERSHEY_SIMPLEX, 0.5, GREEN, 1, cv::LINE_AA);
-    cv::rectangle(debugging_frame_, cv::Point(right_x - 5, tmp_y_offset_ - 5), cv::Point(right_x + 5,tmp_y_offset_ + 5), GREEN, 2, cv::LINE_AA);
-    putText(debugging_frame_, cv::format("(%d, %d, right)", right_x, tmp_y_offset_), cv::Point(right_x, tmp_y_offset_ - 20), cv::FONT_HERSHEY_SIMPLEX, 0.5, GREEN, 1, cv::LINE_AA);
-    cv::rectangle(debugging_frame_, cv::Point(center_x - 5, tmp_y_offset_ - 5), cv::Point(center_x + 5, tmp_y_offset_ + 5), RED, 2, cv::LINE_AA);
-    putText(debugging_frame_, cv::format("(%d, %d, lane_center)", center_x, tmp_y_offset_), cv::Point(center_x, tmp_y_offset_ - 20), cv::FONT_HERSHEY_SIMPLEX, 0.5, RED, 1, cv::LINE_AA);
-    cv::rectangle(debugging_frame_, cv::Point(img_width_/2 - 5, tmp_y_offset_ - 5), cv::Point(img_width_/2 + 5, tmp_y_offset_ + 5), BLUE, 2, cv::LINE_AA);
-    putText(debugging_frame_, cv::format("(%d, %d, img_center)", img_width_/2, tmp_y_offset_), cv::Point(img_width_/2, tmp_y_offset_ - 20), cv::FONT_HERSHEY_SIMPLEX, 0.5, BLUE, 1, cv::LINE_AA);
+
+    cv::rectangle(debugging_frame_,
+                  cv::Point(left_x - 5, tmp_y_offset_- 5), cv::Point(left_x + 5, tmp_y_offset_ + 5), 
+                  GREEN, 2, cv::LINE_AA);
+    putText(debugging_frame_,
+            cv::format("(%d, %d, left)", left_x, tmp_y_offset_), cv::Point(left_x, tmp_y_offset_ - 20),
+            cv::FONT_HERSHEY_SIMPLEX, 0.5, GREEN, 1, cv::LINE_AA);
+
+    cv::rectangle(debugging_frame_,
+                  cv::Point(right_x - 5, tmp_y_offset_ - 5), cv::Point(right_x + 5,tmp_y_offset_ + 5),
+                  GREEN, 2, cv::LINE_AA);
+    putText(debugging_frame_,
+            cv::format("(%d, %d, right)", right_x, tmp_y_offset_), cv::Point(right_x, tmp_y_offset_ - 20),
+            cv::FONT_HERSHEY_SIMPLEX, 0.5, GREEN, 1, cv::LINE_AA);
+
+    cv::rectangle(debugging_frame_,
+                  cv::Point(center_x - 5, tmp_y_offset_ - 5), cv::Point(center_x + 5, tmp_y_offset_ + 5),
+                  RED, 2, cv::LINE_AA);
+    putText(debugging_frame_,
+            cv::format("(%d, %d, lane_center)", center_x, tmp_y_offset_), cv::Point(center_x, tmp_y_offset_ - 20),
+            cv::FONT_HERSHEY_SIMPLEX, 0.5, RED, 1, cv::LINE_AA);
+
+    cv::rectangle(debugging_frame_,
+                  cv::Point(img_width_/2 - 5, tmp_y_offset_ - 5), cv::Point(img_width_/2 + 5, tmp_y_offset_ + 5),
+                  BLUE, 2, cv::LINE_AA);
+    putText(debugging_frame_,
+            cv::format("(%d, %d, img_center)", img_width_/2, tmp_y_offset_), cv::Point(img_width_/2, tmp_y_offset_ - 20),
+            cv::FONT_HERSHEY_SIMPLEX, 0.5, BLUE, 1, cv::LINE_AA);
 }
 
 template class LaneDetector<float>;
