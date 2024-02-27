@@ -1,5 +1,5 @@
-#ifndef LANE_DETECTOR_HPP_
-#define LANE_DETECTOR_HPP_
+#ifndef LANE_DETECTOR_H_
+#define LANE_DETECTOR_H_
 
 #include "opencv2/opencv.hpp"
 #include <yaml-cpp/yaml.h>
@@ -50,4 +50,4 @@ private:
 };
 }  // namespace xycar
 
-#endif  // LANE_DETECTOR_HPP_
+#endif  // LANE_DETECTOR_H_

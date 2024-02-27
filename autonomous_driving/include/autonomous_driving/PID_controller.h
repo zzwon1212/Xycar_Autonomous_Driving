@@ -1,5 +1,5 @@
-#ifndef PID_CONTROLLER_HPP_
-#define PID_CONTROLLER_HPP_
+#ifndef PID_CONTROLLER_H_
+#define PID_CONTROLLER_H_
 
 #include <cstdint>
 
@@ -41,4 +41,4 @@ private:
 };
 }  // namespace Xycar
 
-#endif  // PID_CONTROLLER_HPP_
+#endif  // PID_CONTROLLER_H_

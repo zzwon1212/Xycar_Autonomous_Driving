@@ -1,5 +1,5 @@
-#ifndef DRIVING_HPP_
-#define DRIVING_HPP_
+#ifndef DRIVING_H_
+#define DRIVING_H_
 
 #include <cmath>
 // #include <ctime>
@@ -14,8 +14,8 @@
 // #include <yolov3_trt_ros/BoundingBox.h>
 // #include <yolov3_trt_ros/BoundingBoxes.h>
 
-#include "autonomous_driving/lane_detector.hpp"
-#include "autonomous_driving/PID_controller.hpp"
+#include "autonomous_driving/lane_detector.h"
+#include "autonomous_driving/PID_controller.h"
 
 namespace xycar
 {
@@ -133,4 +133,4 @@ private:  // @@@@@@@@@@@@@@@@@ TODO: Is this private necessary?
 };  // class Driving
 }  // namespace xycar
 
-#endif // DRIVING_HPP_
+#endif // DRIVING_H_
