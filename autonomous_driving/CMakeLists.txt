@@ -14,10 +14,10 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   sensor_msgs
   # std_msgs @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-  xycar_msgs #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+  xycar_msgs
 )
-find_package(yaml-cpp REQUIRED) #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-find_package(OpenCV 4.5.5 REQUIRED PATHS /usr/local/lib/cmake/opencv4)  # old: 4.5.5
+find_package(yaml-cpp REQUIRED)
+find_package(OpenCV 4.5.5 REQUIRED PATHS /usr/local/lib/cmake/opencv4)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -110,7 +110,6 @@ include_directories(
 )
 
 ## Declare a C++ library
-# add_library(${PROJECT_NAME} #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 add_library(modules
   src/driving.cpp
   src/lane_detector.cpp
@@ -126,6 +125,6 @@ add_executable(${PROJECT_NAME}_node src/main.cpp)
 target_link_libraries(${PROJECT_NAME}_node
   modules
   ${catkin_LIBRARIES}
-  ${YAML_CPP_LIBRARIES} #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+  ${YAML_CPP_LIBRARIES}
   ${OpenCV_LIBRARIES}
 )

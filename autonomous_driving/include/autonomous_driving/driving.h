@@ -1,18 +1,18 @@
 #ifndef DRIVING_H_
 #define DRIVING_H_
 
-#include <cmath>
+// #include <cmath>
 // #include <ctime>
 
 // #include <algorithm>
 // #include <vector>
 
 #include <ros/ros.h>
-// #include <sensor_msgs/Image.h>
-// #include <sensor_msgs/LaserScan.h>
+#include <sensor_msgs/Image.h>
+#include <sensor_msgs/LaserScan.h>
+#include <yolov3_trt_ros/BoundingBox.h>
+#include <yolov3_trt_ros/BoundingBoxes.h>
 #include <xycar_msgs/xycar_motor.h>
-// #include <yolov3_trt_ros/BoundingBox.h>
-// #include <yolov3_trt_ros/BoundingBoxes.h>
 
 #include "autonomous_driving/lane_detector.h"
 #include "autonomous_driving/PID_controller.h"
@@ -43,7 +43,7 @@ public:
     /**
      * @brief Destroy the Driving object
      */
-    // virtual ~Driving();
+    virtual ~Driving();
 
     /**
      * @brief Run
@@ -51,85 +51,84 @@ public:
     void run();
 
 private:
-//     /**
-//      * @brief Set the parameters from config file
-//      *
-//      * @param[in] config Configuration for searching and keeping Hough lines using Hough, Moving average and PID control
-//      */
+    /**
+     * @brief Set the parameters from config file
+     *
+     * @param[in] config Configuration for searching and keeping Hough lines using Hough, Moving average and PID control
+     */
     void setParams(const YAML::Node& config);
 
 //     /**
 //      * @brief Control the speed of xycar
 //      *
-//      * @param[in] steeringAngle Angle to steer xycar. If over max angle, deaccelerate, otherwise accelerate
+//      * @param[in] steering_angle Angle to steer xycar. If over max angle, deaccelerate, otherwise accelerate
 //      */
-//     void speedControl(PREC steeringAngle);
+    void controlSpeed(PREC steering_angle);
 
-//     /**
-//      * @brief publish the motor topic message
-//      *
-//      * @param[in] steeringAngle Angle to steer xycar actually
-//      */
-//     void drive(PREC steeringAngle);
-//     void findStopLine(cv::Mat& frame);
-//     void imageCallback(const sensor_msgs::Image& message);
-//     void scanCallback(const sensor_msgs::LaserScan::ConstPtr& scan);
+    /**
+     * @brief publish the motor topic message
+     *
+     * @param[in] steering_angle Angle to steer xycar actually
+     */
+    void drive(PREC steering_angle);
+
 //     // void bboxClassCallback(const yolov3_trt_ros::BoundingBoxes::ConstPtr& bbox_class_data);
-//     // void yoloCallback(const yolov3_trt_ros::BoundingBoxes::ConstPtr& predictions);
 //     std::string getfilename();
 
 private:  // @@@@@@@@@@@@@@@@@ TODO: Is this private necessary?
     ControllerPtr PID_;                      ///< PID Class for Control
-//     // FilterPtr mMovingAverage;                ///< Moving Average Filter Class for Noise filtering
     DetectorPtr LaneDetector_;
 
-//     // ROS Variables
-//     ros::NodeHandle mNodeHandler;          ///< Node Hanlder for ROS. In this case Detector and Controler
-//     ros::Publisher mPublisher;             ///< Publisher to send message about
-//     ros::Subscriber mSubscriber;           ///< Subscriber to receive image
-//     ros::Subscriber mSubscriberScan;
-//     ros::Subscriber mSubscriberBbox;
-//     ros::Subscriber mSubscriberBboxClass;
-//     std::string mPublishingTopicName;      ///< Topic name to publish
-//     std::string mSubscribedTopicName;      ///< Topic name to subscribe
-//     std::string mSubscribedTopicScan;
-//     std::string mSubscribedTopicYolo;
-//     uint32_t mQueueSize;                   ///< Max queue size for message
-//     // xycar_msgs::xycar_motor mMotorMessage; ///< Message for the motor of xycar
+    // ROS Variables
+    uint32_t queue_size_;  // Max queue size for message
+    ros::NodeHandle NodeHandler_;  // Node Hanlder for ROS. In this case Detector and Controller
+    ros::Subscriber SubscriberImg_;  // Subscriber to receive topic from Camera
+    ros::Subscriber SubscriberScan_;  // Subscriber to receive topic from LiDAR
+    ros::Subscriber SubscriberYOLO_;  // Subscriber to receive topic from YOLO model
+    ros::Publisher PublisherMotor_;  // Publisher to send topic to Xycar motor
+    std::string sub_topic_img_;  // Topic name to subscribe from Camera
+    std::string sub_topic_scan_;  // Topic name to subscribe from LiDAR
+    std::string sub_topic_yolo_;  // Topic name to subscribe from YOLO model
+    std::string pub_topic_motor_;  // Topic name to publish to Xycar motor
+    // xycar_msgs::xycar_motor mMotorMessage;  // @@@@@@@@@@@ TODO: Is necessary? Message for the motor of xycar
 
-//     // OpenCV Image processing Variables
+    // OpenCV Image processing Variables
+    void imageCallback(const sensor_msgs::Image& message);
     cv::Mat frame_;  // Image from camera. The raw image is converted into cv::Mat
-//     std::vector<float> mScan;
-//     int mLidarLastObsPos = -1;
-    std::vector<int> nearest_object_;
-//     int mLastPredClass = -1;
-//     // bool mStopLine = false;
-//     bool mStopLine;
 
-//     // Xycar Device variables
-//     PREC mXycarSpeed;                 ///< Current speed of xycar
-//     PREC mXycarMaxSpeed;              ///< Max speed of xycar
-//     PREC mXycarMinSpeed;              ///< Min speed of xycar
-//     PREC mXycarSpeedControlThreshold; ///< Threshold of angular of xycar
-//     PREC mAccelerationStep;           ///< How much would accelrate xycar depending on threshold
-    PREC deceleration_step_;           ///< How much would deaccelrate xycar depending on threshold
+    // Xycar Device variables
+    PREC xycar_speed_;  // Current speed of xycar
+    PREC xycar_speed_min_;  // Min speed of xycar
+    PREC xycar_speed_max_;  // Max speed of xycar
+    PREC xycar_speed_control_thresh_;  // Threshold of angular of xycar
+    PREC deceleration_step_;  // How much would deaccelrate xycar depending on threshold
     PREC tmp_deceleration_step_;
+    PREC acceleration_step_;  // How much would accelrate xycar depending on threshold
 
-//     PREC mFrontObsCnt;
-//     PREC mLeftObsCnt;
-//     PREC mRightObsCnt;
-//     PREC mLidarSideDepth;
-//     PREC mLidarSideObsThresh;
-//     PREC mLidarFrontAngle;
-//     PREC mLidarFrontDepth;
-//     PREC mLidarFrontObsThresh;
+    // LiDAR variables
+    void scanCallback(const sensor_msgs::LaserScan::ConstPtr& message);
+    std::vector<float> lidar_data_;
+    PREC front_obs_cnt_;
+    PREC left_obs_cnt_;
+    PREC right_obs_cnt_;
+    PREC front_obs_angle_;
+    PREC front_obs_depth_;
+    PREC front_obs_cnt_thresh_;
+    PREC side_obs_depth_;
+    PREC side_obs_cnt_thresh_;
+    int last_obs_pos_ = -1;
 
-//     PREC mObjXDepthThresh;
-//     PREC mObjXYDepthThresh;
+    // Object Detection variables
+    void yoloCallback(const yolov3_trt_ros::BoundingBoxes::ConstPtr& predictions);
+    std::vector<int> nearest_object_;
+    void findStopLine(cv::Mat& frame);
+    bool is_stopline_;
+    int last_obj_class_ = -1;
+    PREC obj_depth_thresh_;
 
 //     // cv::VideoWriter outputVideo;
 //     // Debug Flag
-//     bool mDebugging = false; ///< Debugging or not
+    bool is_debugging_;  // Debugging or not
 };  // class Driving
 }  // namespace xycar
 

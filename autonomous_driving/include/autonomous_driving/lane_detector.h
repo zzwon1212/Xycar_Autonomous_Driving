@@ -4,8 +4,6 @@
 #include "opencv2/opencv.hpp"
 #include <yaml-cpp/yaml.h>
 
-// /// create your lane detecter
-// /// Class naming.. it's up to you.
 namespace xycar
 {
 template <typename PREC>
@@ -14,7 +12,7 @@ class LaneDetector final
 public:
     using Ptr = LaneDetector*;  // Pointer type of the class(It's up to you)
 
-    /// Scalar values of colors
+    // Scalar values of colors
     static inline const cv::Scalar RED = {0, 0, 255};
     static inline const cv::Scalar GREEN = {0, 255, 0};
     static inline const cv::Scalar BLUE = {255, 0, 0};
@@ -29,8 +27,8 @@ public:
     }
     std::tuple<double, bool, bool> getLaneInfo(cv::Mat& frame);
 
-    // @@@@@@@@@@@@ ??????????????????
-    // void setYOffset(double speed){tmp_y_offset_ = y_offset_ - speed * y_gain_;}
+    const cv::Mat& getDebugFrame() const {return debugging_frame_;};
+    void setYOffset(double speed){tmp_y_offset_ = y_offset_ - speed * y_gain_;}
 
 private:
     int32_t img_width_, img_height_;
@@ -41,7 +39,7 @@ private:
     bool is_debugging_;
     cv::Point prev_left_, prev_right_;
     int leftC_, rightC_;
-    cv::Mat debugging_frame_, debugging_roi_;
+    cv::Mat debugging_frame_;   // @@@@@@@@@ ??? debugging_roi_;
 
     void setConfig(const YAML::Node& config);
     std::pair<std::vector<int>, std::vector<int>> divideLeftRight(std::vector<cv::Vec4f>& lines);

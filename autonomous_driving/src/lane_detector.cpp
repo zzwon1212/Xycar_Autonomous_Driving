@@ -31,10 +31,7 @@ std::tuple<cv::Point, cv::Point, bool, bool> LaneDetector<PREC>::getLinePosition
         int left_lx = *min_element(left_x_at_Y_offset.begin(), left_x_at_Y_offset.end());
         int left_rx = *max_element(left_x_at_Y_offset.begin(), left_x_at_Y_offset.end());
 
-        if ((left_rx-left_lx > 50) && (left_x_at_Y_offset.size() != 1))
-        {
-            left_lx = left_rx - 50;
-        }
+        if ((left_rx-left_lx > 50) && (left_x_at_Y_offset.size() != 1)) left_lx = left_rx - 50;
 
         left = cv::Point((left_lx + left_rx)/2, tmp_y_offset_);
         prev_left_ = left;
@@ -53,10 +50,7 @@ std::tuple<cv::Point, cv::Point, bool, bool> LaneDetector<PREC>::getLinePosition
         int right_lx = *min_element(right_x_at_Y_offset.begin(), right_x_at_Y_offset.end());
         int right_rx = *max_element(right_x_at_Y_offset.begin(), right_x_at_Y_offset.end());
 
-        if ((right_rx-right_lx > 50) && (right_x_at_Y_offset.size() != 1))
-        {
-            right_rx = right_lx + 50;
-        }
+        if ((right_rx-right_lx > 50) && (right_x_at_Y_offset.size() != 1)) right_rx = right_lx + 50;
 
         right = cv::Point((right_lx + right_rx)/2, tmp_y_offset_);
         prev_right_ = right;
@@ -178,7 +172,7 @@ std::tuple<double, bool, bool> LaneDetector<PREC>::getLaneInfo(cv::Mat& frame)
     if (is_debugging_)
     {
         // draw parts
-        mask.copyTo(debugging_roi_);
+        // mask.copyTo(debugging_roi_);  @@@@@@@@@@@@@@@@ ????????
         frame.copyTo(debugging_frame_);
         drawLines(lines);
         drawRectangle(left.x, right.x);
