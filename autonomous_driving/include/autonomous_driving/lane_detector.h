@@ -15,9 +15,9 @@ public:
     using Ptr = LaneDetector*;  // Pointer type of the class(It's up to you)
 
     /// Scalar values of colors
-    static inline const cv::Scalar kRed = {0, 0, 255};
-    static inline const cv::Scalar kGreen = {0, 255, 0};
-    static inline const cv::Scalar kBlue = {255, 0, 0};
+    static inline const cv::Scalar RED = {0, 0, 255};
+    static inline const cv::Scalar GREEN = {0, 255, 0};
+    static inline const cv::Scalar BLUE = {255, 0, 0};
 
     LaneDetector(const YAML::Node& config) {
         setConfig(config);

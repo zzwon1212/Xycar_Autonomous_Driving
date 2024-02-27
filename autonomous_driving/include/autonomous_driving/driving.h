@@ -33,8 +33,8 @@ public:
     using ControllerPtr = typename PIDController<PREC>::Ptr;  // Pointer type of PIDController
     using DetectorPtr = typename LaneDetector<PREC>::Ptr;  // Pointer type of LaneDetecter(It's up to you)
 
-    static constexpr int32_t kSteeringAngleLimit = 50;  // Xycar Steering Angle Limit
-    static constexpr double kFPS = 33.0;  // FPS
+    static constexpr int32_t STEERING_ANGLE_LIMIT = 50;  // Xycar Steering Angle Limit
+    static constexpr double FPS = 33.0;  // FPS
     /**
      * @brief Construct a new Driving object
      */

@@ -59,7 +59,7 @@ void Driving<PREC>::setParams(const YAML::Node& config)
 template <typename PREC>
 void Driving<PREC>::run()
 {
-    ros::Rate rate(kFPS);
+    ros::Rate rate(FPS);
     // int isFirstFrame = True;
 
     while (ros::ok()) {
@@ -80,7 +80,7 @@ void Driving<PREC>::run()
         bool is_left_detected, is_right_detected;
         std::tie(lane_center, is_left_detected, is_right_detected) = LaneDetector_ -> getLaneInfo(frame_);
         double gap = (lane_center - frame_.cols/2);  // @@@@@@@@@@@@@@@@ TODO: Any error?
-        auto steering_angle = std::max(std::min(kSteeringAngleLimit, (int32_t) PID_ -> getPIDOutput(gap)), -1 * kSteeringAngleLimit);
+        auto steering_angle = std::max(std::min(STEERING_ANGLE_LIMIT, (int32_t) PID_ -> getPIDOutput(gap)), -1 * STEERING_ANGLE_LIMIT);
         tmp_deceleration_step_ = std::round(std::abs(gap) / 10) * deceleration_step_;
 
         xycar_msgs::xycar_motor motorMessage;
