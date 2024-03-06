@@ -1,4 +1,5 @@
 *.trt
+*.pth
 *.zip
 .DS_Store
 *.swp
