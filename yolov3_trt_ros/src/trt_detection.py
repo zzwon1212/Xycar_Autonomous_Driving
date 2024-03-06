@@ -51,47 +51,56 @@
 import sys, os
 import time
 import numpy as np
+import math
 import cv2
-import tensorrt as trt
-from PIL import Image,ImageDraw
-import rospy
+# from cv_bridge import CvBridge  # If you use Python2
+from PIL import Image, ImageDraw
 
+import rospy
 from std_msgs.msg import String
+from sensor_msgs.msg import Image as Imageros
 from yolov3_trt_ros.msg import BoundingBox, BoundingBoxes
 
-from cv_bridge import CvBridge
-from sensor_msgs.msg import Image as Imageros
-
 from data_processing import PreprocessYOLO, PostprocessYOLO, ALL_CATEGORIES
-import common
-import math
 
-TRT_LOGGER = trt.Logger(trt.Logger.WARNING)
+import torch
+if torch.cuda.is_available():
+    is_cuda = True
+    import tensorrt as trt
+    import common
+    TRT_LOGGER = trt.Logger(trt.Logger.WARNING)
+    # TODO: Change this to relative path
+    MODEL = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                         "model/model_epoch4400_pretrained_04_001.trt")
+else:
+    is_cuda = False
+    from with_cpu.yolov3 import DarkNet53
+    from with_cpu.util.tools import *
+    MODEL = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                         "model/model_epoch4400_pretrained.pth")
 
-CFG = "/home/nvidia/xycar_ws/src/yolov3_trt_ros/src/yolov3-tiny_tstl_416.cfg"
-TRT = "/home/nvidia/xycar_ws/src/yolov3_trt_ros/src/model_epoch4400_pretrained_04_001.trt"
-LABEL = {0: "left", 1: "right", 2: "crosswalk", 3: "stop", 4: "car", 5: "Red", 6: "Green", 7: "Yellow"}
+CFG = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                   "config/yolov3-tiny_tstl_416.cfg")
 NUM_CLASS = 8
 # INPUT_IMG = '/home/nvidia/xycar_ws/src/yolov3_trt_ros/src/video1_2.png'
 
-bridge = CvBridge()
 xycar_image = np.empty(shape=[0])
 
-global camera_matrix, dis_coeff, H_mat
-camera_matrix = np.array([[352.494189, 0.000000, 295.823760],
-                        [0.000000, 353.504572, 239.649689],
-                        [0.000000, 0.000000, 1.000000]])
-dis_coeff = np.array([-0.318744, 0.088199, 0.000167, 0.000699, 0.000000])
-H_mat = [[-1.91653414e-01, -1.35359667e+00, 3.09165939e+02],
-         [8.42075718e-04, -2.87835672e+00, 6.16140688e+02],
-         [9.75538785e-06, -5.04169177e-03, 1.00000000e+00]]
+# global CAMERA_MATRIX, DISTORT_COEFF, HOMOGRAPHY
+CAMERA_MATRIX = np.array([[352.494189, 0.000000, 295.823760],
+                          [0.000000, 353.504572, 239.649689],
+                          [0.000000, 0.000000, 1.000000]])
+DISTORT_COEFF = np.array([-0.318744, 0.088199, 0.000167, 0.000699, 0.000000])
+HOMOGRAPHY = [[-1.91653414e-01, -1.35359667e+00, 3.09165939e+02],
+              [8.42075718e-04, -2.87835672e+00, 6.16140688e+02],
+              [9.75538785e-06, -5.04169177e-03, 1.00000000e+00]]
 
 class yolov3_trt(object):
     def __init__(self):
         self.cfg_file_path = CFG
         self.num_class = NUM_CLASS
         width, height, masks, anchors = parse_cfg_wh(self.cfg_file_path)
-        self.engine_file_path = TRT
+        self.model_path = MODEL
         self.show_img = False
         # Two-dimensional tuple with the target network's (spatial) input resolution in HW ordered
         input_resolution_yolov3_WH = (width, height)
@@ -114,9 +123,9 @@ class yolov3_trt(object):
 
         self.postprocessor = PostprocessYOLO(**postprocessor_args)
 
-        self.engine = get_engine(self.engine_file_path)
-
-        self.context = self.engine.create_execution_context()
+        if is_cuda:
+            self.engine = get_engine(self.model_path)
+            self.context = self.engine.create_execution_context()
 
         self.detection_pub = rospy.Publisher('/yolov3_trt_ros/detections', BoundingBoxes, queue_size=1)
 
@@ -128,44 +137,68 @@ class yolov3_trt(object):
         while not rospy.is_shutdown():
             rate.sleep()
 
-            # Do inference with TensorRT
-
-            inputs, outputs, bindings, stream = common.allocate_buffers(self.engine)
-
             # if xycar_image is empty, skip inference
             if xycar_image.shape[0] == 0:
                 continue
 
-            if self.show_img:
-                show_trt = cv2.cvtColor(xycar_image, cv2.COLOR_BGR2RGB)
-                cv2.imshow("show_trt", show_trt)
-                cv2.waitKey(1)
+            # if self.show_img:
+            #     show_trt = cv2.cvtColor(xycar_image, cv2.COLOR_RGB2BGR)
+            #     cv2.imshow("show_trt", show_trt)
+            #     cv2.waitKey(1)
 
             image = self.preprocessor.process(xycar_image)
             # Store the shape of the original input image in WH format, we will need it for later
             shape_orig_WH = (image.shape[3], image.shape[2])
-            # Set host input to the image. The common.do_inference function will copy the input to the GPU before executing.
+
             start_time = time.time()
-            inputs[0].host = image
-            trt_outputs = common.do_inference(self.context, bindings=bindings, inputs=inputs, outputs=outputs, stream=stream)
+            if is_cuda:  # TensorRT with GPU
+                # Do inference with TensorRT
+                inputs, outputs, bindings, stream = common.allocate_buffers(self.engine)
 
-            # Before doing post-processing, we need to reshape the outputs as the common.do_inference will give us flat arrays.
-            trt_outputs = [output.reshape(shape) for output, shape in zip(trt_outputs, self.output_shapes)]
+                # Set host input to the image. The common.do_inference function will copy the input to the GPU before executing.
+                inputs[0].host = image
+                trt_outputs = common.do_inference(self.context, bindings=bindings, inputs=inputs, outputs=outputs, stream=stream)
 
-            # Run the post-processing algorithms on the TensorRT outputs and get the bounding box details of detected objects
-            boxes, classes, scores = self.postprocessor.process(trt_outputs, shape_orig_WH)
+                # Before doing post-processing, we need to reshape the outputs as the common.do_inference will give us flat arrays.
+                trt_outputs = [output.reshape(shape) for output, shape in zip(trt_outputs, self.output_shapes)]
 
+                # Run the post-processing algorithms on the TensorRT outputs and get the bounding box details of detected objects
+                boxes, classes, scores = self.postprocessor.process(trt_outputs, shape_orig_WH)
+            else:  # Torch with CPU
+                with torch.no_grad():
+                    cfg_data = parse_hyperparam_config(self.cfg_file_path)
+                    cfg_param = get_hyperparam(cfg_data)
+                    model = DarkNet53(self.cfg_file_path, cfg_param)
+                    model.eval()
+                    checkpoint = torch.load(self.model_path, map_location=torch.device('cpu'))
+                    model.load_state_dict(checkpoint["model_state_dict"])
+                    img_troch = torch.from_numpy(image)
+                    output = model(img_troch)
+
+                    best_box_list = non_max_suppression(output, conf_thres=0.4, iou_thres=0.001)
+                    best_box_list = best_box_list[0].numpy().astype(np.float32)
+                    # if best_box_list.numel() == 0:
+                    if len(best_box_list) == 0:
+                        boxes = None
+                        scores = None
+                        classes = None
+                    else:
+                        boxes = best_box_list[:, :4]
+                        boxes[:, 2] -= boxes[:, 0]  # xmax -> width
+                        boxes[:, 3] -= boxes[:, 1]  # ymax -> height
+                        scores = best_box_list[:, 4]
+                        classes = best_box_list[:, 5].astype(np.int32)
             latency = time.time() - start_time
             fps = 1 / latency
 
             # Draw the bounding boxes onto the original input image and save it as a PNG file
             # print(boxes, classes, scores)
             if self.show_img:
-                img_show = np.array(np.transpose(image[0], (1,2,0)) * 255, dtype=np.uint8)
+                img_show = np.array(np.transpose(image[0], (1, 2, 0)) * 255, dtype=np.uint8)
                 obj_detected_img = draw_bboxes(Image.fromarray(img_show), boxes, scores, classes, ALL_CATEGORIES)
                 obj_detected_img_np = np.array(obj_detected_img)
                 result_img = cv2.cvtColor(obj_detected_img_np, cv2.COLOR_BGR2RGB)
-                cv2.putText(result_img, "FPS:"+str(int(fps)), (10,50),cv2.FONT_HERSHEY_SIMPLEX, 1,(0,255,0),2,1)
+                cv2.putText(result_img, "FPS:" + str(int(fps)), (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, 1)
                 cv2.imshow("result",result_img)
                 cv2.waitKey(1)
 
@@ -176,14 +209,13 @@ class yolov3_trt(object):
                     grid_img[90 * i, :, :] = [0, 0, 0]
                     grid_img[:, 90 * i, :] = [0, 0, 0]
 
-            # depthes = []
             xdepth_list = []
             ydepth_list = []
             if boxes is not None and not classes is None:
                 for box, class_id in zip(boxes, classes):
                     xmin, ymin, width, height = box
                     obj_bottom_center = np.array([xmin + width/2, ymin + height, 1])
-                    grid_point = np.dot(H_mat, obj_bottom_center)
+                    grid_point = np.dot(HOMOGRAPHY, obj_bottom_center)
                     grid_point /= grid_point[2] + 0.000001
                     grid_point = np.round(grid_point).astype(int)
 
@@ -193,15 +225,15 @@ class yolov3_trt(object):
                     ydepth = (540 - y) / 2
                     ydepth_list.append(ydepth)
 
-                    # if self.show_img:
-                        # cv2.circle(grid_img, center=(x, y), radius=6, color=(0, 0, 255), thickness=-1)
-                        # cv2.putText(grid_img, text=f"{LABEL[class_id]}: {depth}cm", org=(x + 5, y), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.5, color=(0, 0, 0))
+                    if self.show_img:
+                        cv2.circle(grid_img, center=(x, y), radius=6, color=(0, 0, 255), thickness=-1)
+                        cv2.putText(grid_img, text=f"{ALL_CATEGORIES[class_id]}: {ydepth}cm", org=(x + 5, y), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.5, color=(0, 0, 0))
 
             if self.show_img:
                 cv2.imshow("grid", grid_img)
                 cv2.waitKey(1)
 
-            #publish detected objects boxes and classes
+            # publish detected objects boxes and classes
             self.publisher(boxes, scores, classes, xdepth_list, ydepth_list)
 
 
@@ -211,17 +243,17 @@ class yolov3_trt(object):
             return None
         for box, score, category, xdepth, ydepth in zip(boxes, scores, classes, xdepth_list, ydepth_list):
             # Populate darknet message
-            minx, miny, width, height = box
+            xmin, ymin, width, height = box
             detection_msg = BoundingBox()
-            detection_msg.xmin = int(minx)
-            detection_msg.xmax = int(minx + width)
-            detection_msg.ymin = int(miny)
-            detection_msg.ymax = int(miny + height)
-            detection_msg.probability = score
+            detection_msg.xmin = int(xmin)
+            detection_msg.xmax = int(xmin + width)
+            detection_msg.ymin = int(ymin)
+            detection_msg.ymax = int(ymin + height)
+            detection_msg.prob = float(score)
             detection_msg.id = int(category)
             detection_msg.xdepth = int(xdepth)
             detection_msg.ydepth = int(ydepth)
-            detection_results.bounding_boxes.append(detection_msg)
+            detection_results.bbox.append(detection_msg)
         return detection_results
 
     def publisher(self, boxes, confs, classes, xdepth_list, ydepth_list):
@@ -260,12 +292,12 @@ def img_callback(data):
     global xycar_image
 
     # Python 2
-    # xycar_image = bridge.imgmsg_to_cv2(data, "bgr8")
+    # xycar_image = CvBridge().imgmsg_to_cv2(data, "bgr8")
 
     # Python 3
     # xycar_image == RGB
     test_image = np.frombuffer(data.data, dtype=np.uint8).reshape(data.height, data.width, -1)
-    mapx, mapy = cv2.initUndistortRectifyMap(camera_matrix, dis_coeff, None, None, (test_image.shape[1], test_image.shape[0]), 5)
+    mapx, mapy = cv2.initUndistortRectifyMap(CAMERA_MATRIX, DISTORT_COEFF, None, None, (test_image.shape[1], test_image.shape[0]), 5)
     xycar_image = cv2.remap(test_image, mapx, mapy, cv2.INTER_LINEAR)
 
 # image_raw = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -294,16 +326,16 @@ def draw_bboxes(image_raw, bboxes, confidences, categories, all_categories, bbox
         bottom = min(image_raw.height, np.floor(y_coord + height + 0.5).astype(int))
 
         draw.rectangle(((left, top), (right, bottom)), outline=bbox_color)
-        draw.text((left, top - 12), '{0} {1:.2f}'.format(all_categories[category], score), fill=bbox_color)
+        draw.text((left, top - 12), f'{all_categories[category]} {score:.2f}', fill=bbox_color)
 
     return image_raw
 
-def get_engine(engine_file_path=""):
+def get_engine(model_path=""):
     """Attempts to load a serialized engine if available, otherwise builds a new TensorRT engine and saves it."""
-    if os.path.exists(engine_file_path):
+    if os.path.exists(model_path):
         # If a serialized engine exists, use it instead of building an engine.
-        print("Reading engine from file {}".format(engine_file_path))
-        with open(engine_file_path, "rb") as f, trt.Runtime(TRT_LOGGER) as runtime:
+        print("Reading engine from file {}".format(model_path))
+        with open(model_path, "rb") as f, trt.Runtime(TRT_LOGGER) as runtime:
             return runtime.deserialize_cuda_engine(f.read())
     else:
         print("no trt model")

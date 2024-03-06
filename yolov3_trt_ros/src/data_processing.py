@@ -68,7 +68,8 @@ def load_label_categories(label_file_path):
     categories = [line.rstrip('\n') for line in open(label_file_path)]
     return categories
 
-LABEL_FILE_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'labels.txt')
+LABEL_FILE_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
+                               'config/labels.txt')
 ALL_CATEGORIES = load_label_categories(LABEL_FILE_PATH)
 
 # Let's make sure that there are 80 classes, as expected for the COCO data set:
@@ -113,7 +114,7 @@ class PreprocessYOLO(object):
         """
 
         #image_raw = np.array(Image.open(input_image_path).convert('RGB'), dtype=np.uint8)
-        
+
         # Expecting yolo_input_resolution in (height, width) format, adjusting to PIL
         # convention (width, height) in PIL:
         new_resolution = (self.yolo_input_resolution[0], self.yolo_input_resolution[1])
@@ -123,7 +124,7 @@ class PreprocessYOLO(object):
         #image_resized = np.array(image_raw, dtype=np.uint8)
         #image_resized = cv2.resize(image_resized, new_resolution, interpolation=cv2.INTER_LINEAR)
         #image_resized = np.array(image_raw.resize(new_resolution, resample=Image.BILINEAR), dtype=np.uint8)
-        
+
         # show_img = Image.fromarray(image_resized)
         # plt.imshow(show_img)
         # plt.show()
@@ -294,7 +295,7 @@ class PostprocessYOLO(object):
         # respective masks. Then we iterate through all output-mask pairs and generate candidates
         # for bounding boxes, their corresponding category predictions and their confidences:
         boxes, categories, confidences = list(), list(), list()
-        
+
         for output, mask in zip(outputs_reshaped, self.masks):
             box, category, confidence = self._process_feats(output, mask)
             box, category, confidence = self._filter_boxes(box, category, confidence)
