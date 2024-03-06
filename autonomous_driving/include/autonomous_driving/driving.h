@@ -1,12 +1,6 @@
 #ifndef DRIVING_H_
 #define DRIVING_H_
 
-// #include <cmath>
-// #include <ctime>
-
-// #include <algorithm>
-// #include <vector>
-
 #include <ros/ros.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/LaserScan.h>
@@ -72,63 +66,82 @@ private:
      */
     void drive(PREC steering_angle);
 
-//     // void bboxClassCallback(const yolov3_trt_ros::BoundingBoxes::ConstPtr& bbox_class_data);
-//     std::string getfilename();
-
-private:  // @@@@@@@@@@@@@@@@@ TODO: Is this private necessary?
-    ControllerPtr PID_;                      ///< PID Class for Control
+    ControllerPtr PID_;  // PID Class for Control
     DetectorPtr LaneDetector_;
 
     // ROS Variables
-    uint32_t queue_size_;  // Max queue size for message
+    uint32_t QUEUE_SIZE_;  // Max queue size for message
     ros::NodeHandle NodeHandler_;  // Node Hanlder for ROS. In this case Detector and Controller
     ros::Subscriber SubscriberImg_;  // Subscriber to receive topic from Camera
     ros::Subscriber SubscriberScan_;  // Subscriber to receive topic from LiDAR
     ros::Subscriber SubscriberYOLO_;  // Subscriber to receive topic from YOLO model
     ros::Publisher PublisherMotor_;  // Publisher to send topic to Xycar motor
-    std::string sub_topic_img_;  // Topic name to subscribe from Camera
-    std::string sub_topic_scan_;  // Topic name to subscribe from LiDAR
-    std::string sub_topic_yolo_;  // Topic name to subscribe from YOLO model
-    std::string pub_topic_motor_;  // Topic name to publish to Xycar motor
-    // xycar_msgs::xycar_motor mMotorMessage;  // @@@@@@@@@@@ TODO: Is necessary? Message for the motor of xycar
+    std::string SUB_TOPIC_IMG_;  // Topic name to subscribe from Camera
+    std::string SUB_TOPIC_SCAN_;  // Topic name to subscribe from LiDAR
+    std::string SUB_TOPIC_YOLO_;  // Topic name to subscribe from YOLO model
+    std::string PUB_TOPIC_MOTOR_;  // Topic name to publish to Xycar motor
 
     // OpenCV Image processing Variables
-    void imageCallback(const sensor_msgs::Image& message);
+    void imageCallback(const sensor_msgs::Image::ConstPtr& message);
     cv::Mat frame_;  // Image from camera. The raw image is converted into cv::Mat
 
     // Xycar Device variables
-    PREC xycar_speed_;  // Current speed of xycar
-    PREC xycar_speed_min_;  // Min speed of xycar
-    PREC xycar_speed_max_;  // Max speed of xycar
-    PREC xycar_speed_control_thresh_;  // Threshold of angular of xycar
-    PREC deceleration_step_;  // How much would deaccelrate xycar depending on threshold
+    PREC XYCAR_SPEED_, XYCAR_SPEED_MIN_, XYCAR_SPEED_MAX_;  // Speed of xycar
+    PREC XYCAR_SPEED_CONTROL_THRESH_;  // Threshold of angular of xycar
+    PREC DECELERATION_STEP_, ACCELERATION_STEP_;  // How much would (de)accelrate xycar depending on threshold
     PREC tmp_deceleration_step_;
-    PREC acceleration_step_;  // How much would accelrate xycar depending on threshold
 
     // LiDAR variables
     void scanCallback(const sensor_msgs::LaserScan::ConstPtr& message);
     std::vector<float> lidar_data_;
-    PREC front_obs_cnt_;
-    PREC left_obs_cnt_;
-    PREC right_obs_cnt_;
-    PREC front_obs_angle_;
-    PREC front_obs_depth_;
-    PREC front_obs_cnt_thresh_;
-    PREC side_obs_depth_;
-    PREC side_obs_cnt_thresh_;
+    PREC front_obs_cnt_, left_obs_cnt_, right_obs_cnt_;
+    PREC FRONT_OBS_ANGLE_, FRONT_OBS_DEPTH_, FRONT_OBS_CNT_THRESH_;
+    PREC SIDE_OBS_DEPTH_, SIDE_OBS_CNT_THRESH_;
     int last_obs_pos_ = -1;
 
     // Object Detection variables
-    void yoloCallback(const yolov3_trt_ros::BoundingBoxes::ConstPtr& predictions);
-    std::vector<int> nearest_object_;
-    void findStopLine(cv::Mat& frame);
-    bool is_stopline_;
-    int last_obj_class_ = -1;
-    PREC obj_depth_thresh_;
+    std::vector<std::string> LABELS_;
+    void yoloCallback(const yolov3_trt_ros::BoundingBoxes::ConstPtr& message);
+    yolov3_trt_ros::BoundingBoxes predictions_;
 
-//     // cv::VideoWriter outputVideo;
-//     // Debug Flag
-    bool is_debugging_;  // Debugging or not
+    void undistortImg(const cv::Mat& input_img, cv::Mat& output_img);
+    /**
+     * @brief draw bounding boxes detected by YOLO
+     *
+     * @param[in] input_img input image
+     * @param[in] output_img output image
+     * @param[in] predictions predictions detected by YOLO
+     */
+    void drawBboxes(const cv::Mat& input_img, cv::Mat& output_img,
+                    const yolov3_trt_ros::BoundingBoxes& predictions);
+    std::vector<cv::Scalar> COLORS_;
+
+    void undistortLanesPosition(const std::pair<int, int>& lanes_position,
+                                const int32_t y,
+                                std::vector<cv::Point>& undistorted_lanes_position);
+    void drawLanes(cv::Mat& input_img, const std::vector<cv::Point>& lanes_position);
+
+    /**
+     * @brief get the closest object detected by YOLO
+     *
+     * @param[in] predictions predictions detected by YOLO
+     * @param[in] closest_object closest object among predictions
+     */
+    void getClosestObject(const yolov3_trt_ros::BoundingBoxes& predictions,
+                          yolov3_trt_ros::BoundingBox& closest_object);
+
+    /**
+     * @brief decide whether there is stop line
+     *
+     * @param[in] input_img input mage
+     */
+    bool isStopLine(const cv::Mat& input_img);
+
+    int last_obj_class_ = -1;
+    PREC RESIZING_X_, RESIZING_Y_;
+    PREC OBJ_DEPTH_THRESH_;
+
+    bool IS_DEBUGGING_;  // Debugging or not
 };  // class Driving
 }  // namespace xycar
 
