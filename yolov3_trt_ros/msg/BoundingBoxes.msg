@@ -1,1 +1,1 @@
-BoundingBox[] bounding_boxes
+BoundingBox[] bbox
