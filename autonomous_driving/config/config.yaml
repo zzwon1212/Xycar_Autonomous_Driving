@@ -37,15 +37,16 @@ TOPIC:
   SUB_YOLO_NAME: /yolov3_trt_ros/detections
   PUB_MOTOR_NAME: /xycar_motor
 
-DEBUG: False
-
 LIDAR:
-  SIDE_DEPTH: 0.25
-  SIDE_OBS_THRESH: 10
   FRONT_ANGLE: 45
   FRONT_DEPTH: 0.3
   FRONT_OBS_THRESH: 50 # 63
+  SIDE_DEPTH: 0.25
+  SIDE_OBS_THRESH: 10
 
 OBJECT:
-  X_DEPTH: 60
+  LABELS: ["Left", "Right", "Crosswalk", "Stopsign", "Car", "Red", "Green", "Yellow"]
+  YOLO_RESOLUTION: 416
   XY_DEPTH: 115
+
+DEBUG: True

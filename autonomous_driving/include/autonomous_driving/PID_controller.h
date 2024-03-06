@@ -30,10 +30,10 @@ public:
     /**
      * @brief Compute and return the PID Control Output
      *
-     * @param[in] gap_between_laneNcar_ Error between estimated position x and half of the image
+     * @param[in] gap_between_lane_and_car_ Error between estimated position x and half of the image
      * @return The result of PID controller
      */
-    PREC getPIDOutput(int32_t gap_between_laneNcar_);
+    PREC getPIDOutput(int32_t gap_between_lane_and_car_);
 
 private:
     const PREC gain_P_;  // Proportional control gain. The higher, the more powerful

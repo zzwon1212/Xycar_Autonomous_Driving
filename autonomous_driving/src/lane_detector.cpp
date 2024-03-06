@@ -1,4 +1,3 @@
-// #include <numeric>
 #include "autonomous_driving/lane_detector.h"
 
 namespace xycar
@@ -33,7 +32,7 @@ std::tuple<cv::Point, cv::Point, bool, bool> LaneDetector<PREC>::getLinePosition
 
         if ((left_rx-left_lx > 50) && (left_x_at_Y_offset.size() != 1)) left_lx = left_rx - 50;
 
-        left = cv::Point((left_lx + left_rx)/2, tmp_y_offset_);
+        left = cv::Point((left_lx + left_rx)/2, moving_y_offset_);
         prev_left_ = left;
         leftC_ = 0;
         is_left_detected = true;
@@ -52,7 +51,7 @@ std::tuple<cv::Point, cv::Point, bool, bool> LaneDetector<PREC>::getLinePosition
 
         if ((right_rx-right_lx > 50) && (right_x_at_Y_offset.size() != 1)) right_rx = right_lx + 50;
 
-        right = cv::Point((right_lx + right_rx)/2, tmp_y_offset_);
+        right = cv::Point((right_lx + right_rx)/2, moving_y_offset_);
         prev_right_ = right;
         rightC_ = 0;
         is_right_detected = true;
@@ -96,8 +95,6 @@ std::tuple<cv::Point, cv::Point, bool, bool> LaneDetector<PREC>::getLinePosition
         leftC_ = 0;
     }
 
-    // std::cout << is_left_detected << ", " << is_right_detected << std::endl;
-
     return std::make_tuple(left, right, is_left_detected, is_right_detected);
 }
 
@@ -118,7 +115,7 @@ std::pair<std::vector<int>, std::vector<int>> LaneDetector<PREC>::divideLeftRigh
             int x_at_Y_offset;
             if (pt1.x != pt2.x)
             {
-                x_at_Y_offset = (tmp_y_offset_ - pt1.y) / slope + pt1.x;
+                x_at_Y_offset = (moving_y_offset_ - pt1.y) / slope + pt1.x;
             }
             else
             {
@@ -140,16 +137,16 @@ std::pair<std::vector<int>, std::vector<int>> LaneDetector<PREC>::divideLeftRigh
 }
 
 template <typename PREC>
-std::tuple<double, bool, bool> LaneDetector<PREC>::getLaneInfo(cv::Mat& frame)
+std::pair<std::pair<int, int>, std::pair<bool, bool>> LaneDetector<PREC>::getLaneInfo(cv::Mat& frame)
 {
     // Set ROI
     // @@@@@@@@@@@@@@@@@@@@@@@@2 TODO: Find more efficient code
     cv::Mat mask = cv::Mat::zeros(frame.size(), CV_8UC1);
     std::vector<cv::Point> square;
-    square.push_back(cv::Point(0, tmp_y_offset_ + y_gap_));
-    square.push_back(cv::Point(0, tmp_y_offset_ - y_gap_));
-    square.push_back(cv::Point(frame.cols, tmp_y_offset_ - y_gap_));
-    square.push_back(cv::Point(frame.cols, tmp_y_offset_ + y_gap_));
+    square.push_back(cv::Point(0, moving_y_offset_ + y_gap_));
+    square.push_back(cv::Point(0, moving_y_offset_ - y_gap_));
+    square.push_back(cv::Point(frame.cols, moving_y_offset_ - y_gap_));
+    square.push_back(cv::Point(frame.cols, moving_y_offset_ + y_gap_));
     cv::fillConvexPoly(mask, &square[0], 4, cv::Scalar(255));
 
     // Get HoughLines
@@ -169,61 +166,10 @@ std::tuple<double, bool, bool> LaneDetector<PREC>::getLaneInfo(cv::Mat& frame)
     bool is_left_detected, is_right_detected;
     std::tie(left, right, is_left_detected, is_right_detected) = getLinePosition(left_lines, right_lines);
 
-    if (is_debugging_)
-    {
-        // draw parts
-        // mask.copyTo(debugging_roi_);  @@@@@@@@@@@@@@@@ ????????
-        frame.copyTo(debugging_frame_);
-        drawLines(lines);
-        drawRectangle(left.x, right.x);
-    }
+    std::pair<int, int> lanes_position = std::make_pair(left.x, right.x);
+    std::pair<bool, bool> is_each_lane_detected = std::make_pair(is_left_detected, is_right_detected);
 
-    return std::make_tuple(static_cast<double>(left.x + right.x)/2 + 30, is_left_detected, is_right_detected);
-}
-
-template <typename PREC>
-void LaneDetector<PREC>::drawLines(std::vector<cv::Vec4f>& lines)
-{
-    for (auto& line : lines)
-    {
-        int x1, y1, x2, y2;
-        std::tie(x1, y1, x2, y2) = std::make_tuple(line[0], line[1], line[2], line[3]);
-        cv::line(debugging_frame_, cv::Point(x1, y1), cv::Point(x2, y2), RED, 2);
-    }
-}
-
-template <typename PREC>
-void LaneDetector<PREC>::drawRectangle(int left_x, int right_x)
-{
-    int center_x = (left_x + right_x)/2;
-
-    cv::rectangle(debugging_frame_,
-                  cv::Point(left_x - 5, tmp_y_offset_- 5), cv::Point(left_x + 5, tmp_y_offset_ + 5), 
-                  GREEN, 2, cv::LINE_AA);
-    putText(debugging_frame_,
-            cv::format("(%d, %d, left)", left_x, tmp_y_offset_), cv::Point(left_x, tmp_y_offset_ - 20),
-            cv::FONT_HERSHEY_SIMPLEX, 0.5, GREEN, 1, cv::LINE_AA);
-
-    cv::rectangle(debugging_frame_,
-                  cv::Point(right_x - 5, tmp_y_offset_ - 5), cv::Point(right_x + 5,tmp_y_offset_ + 5),
-                  GREEN, 2, cv::LINE_AA);
-    putText(debugging_frame_,
-            cv::format("(%d, %d, right)", right_x, tmp_y_offset_), cv::Point(right_x, tmp_y_offset_ - 20),
-            cv::FONT_HERSHEY_SIMPLEX, 0.5, GREEN, 1, cv::LINE_AA);
-
-    cv::rectangle(debugging_frame_,
-                  cv::Point(center_x - 5, tmp_y_offset_ - 5), cv::Point(center_x + 5, tmp_y_offset_ + 5),
-                  RED, 2, cv::LINE_AA);
-    putText(debugging_frame_,
-            cv::format("(%d, %d, lane_center)", center_x, tmp_y_offset_), cv::Point(center_x, tmp_y_offset_ - 20),
-            cv::FONT_HERSHEY_SIMPLEX, 0.5, RED, 1, cv::LINE_AA);
-
-    cv::rectangle(debugging_frame_,
-                  cv::Point(img_width_/2 - 5, tmp_y_offset_ - 5), cv::Point(img_width_/2 + 5, tmp_y_offset_ + 5),
-                  BLUE, 2, cv::LINE_AA);
-    putText(debugging_frame_,
-            cv::format("(%d, %d, img_center)", img_width_/2, tmp_y_offset_), cv::Point(img_width_/2, tmp_y_offset_ - 20),
-            cv::FONT_HERSHEY_SIMPLEX, 0.5, BLUE, 1, cv::LINE_AA);
+    return std::make_pair(lanes_position, is_each_lane_detected);
 }
 
 template class LaneDetector<float>;

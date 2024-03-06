@@ -20,33 +20,31 @@ public:
     LaneDetector(const YAML::Node& config)
     {
         setConfig(config);
-        prev_left_ = cv::Point(0, tmp_y_offset_);
+        prev_left_ = cv::Point(0, moving_y_offset_);
         prev_right_ = cv::Point(img_width_, y_offset_);
         leftC_ = 0;
         rightC_ = 0;
     }
-    std::tuple<double, bool, bool> getLaneInfo(cv::Mat& frame);
 
-    const cv::Mat& getDebugFrame() const {return debugging_frame_;};
-    void setYOffset(double speed){tmp_y_offset_ = y_offset_ - speed * y_gain_;}
+    std::pair<std::pair<int, int>, std::pair<bool, bool>> getLaneInfo(cv::Mat& frame);
+
+    int32_t moving_y_offset_;
+    void setYOffset(double speed){moving_y_offset_ = y_offset_ - speed * y_gain_;}
 
 private:
     int32_t img_width_, img_height_;
     int32_t low_threshold_, high_threshold_;  // Canny params
     int32_t min_pixel_, min_line_, max_gap_;  // HoughlinesP params
-    int32_t y_offset_, tmp_y_offset_, y_gap_;
+    int32_t y_offset_, y_gap_;
     double y_gain_;
     bool is_debugging_;
     cv::Point prev_left_, prev_right_;
     int leftC_, rightC_;
-    cv::Mat debugging_frame_;   // @@@@@@@@@ ??? debugging_roi_;
 
     void setConfig(const YAML::Node& config);
     std::pair<std::vector<int>, std::vector<int>> divideLeftRight(std::vector<cv::Vec4f>& lines);
     std::tuple<cv::Point, cv::Point, bool, bool> getLinePosition(std::vector<int>& left_x_at_Y_offset,
                                                                  std::vector<int>& right_x_at_Y_offset);
-    void drawLines(std::vector<cv::Vec4f>& lines);
-    void drawRectangle(int32_t left_x, int32_t right_x);
 };
 }  // namespace xycar
 
