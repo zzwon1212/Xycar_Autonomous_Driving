@@ -1,11 +1,12 @@
 <launch>
+    <!-- Rosbag -->
     <node name="rosbag_player" pkg="rosbag" type="play" args="-r 2 /workspace/Programmers/xycar_ws_origin/image_raw_2.bag"/>
-    <include file="$(find yolov3_trt_ros)/launch/yolov3_trt_ros.launch"/>
-    <!-- <include file="$(find xycar_motor)/launch/xycar_motor.launch"/> -->
-    <!-- <include file="$(find xycar_lidar)/launch/lidar_noviewer.launch"/> -->
-    <node name="autonomous_driving" pkg="autonomous_driving" type="autonomous_driving_node" output="screen"/>
+
+    <!-- Config -->
     <param name="config_path" type="str" value="$(find autonomous_driving)/config/config.yaml"/>
-	<!-- <node name="usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen">
+
+    <!-- Camera -->
+    <!-- <node name="usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen">
 		<param name="video_device" value="/dev/videoCAM"/>
         <param name="exposure" value="50"/>
         <param name="image_width" value="640"/>
@@ -16,4 +17,16 @@
         <param name="camera_frame_id" value="usb_cam"/>
         <param name="camera_info_url" value="file://$(find usb_cam)/calibration/usb_cam.yaml"/>
 	</node> -->
+
+    <!-- YOLO -->
+    <include file="$(find yolov3_trt_ros)/launch/yolov3_trt_ros.launch"/>
+
+    <!-- LiDAR -->
+    <!-- <include file="$(find xycar_lidar)/launch/lidar_noviewer.launch"/> -->
+
+    <!-- Motor -->
+    <!-- <include file="$(find xycar_motor)/launch/xycar_motor.launch"/> -->
+
+    <!-- Main -->
+    <node name="autonomous_driving" pkg="autonomous_driving" type="autonomous_driving_node" output="screen"/>
 </launch>
