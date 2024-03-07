@@ -6,7 +6,6 @@
 
 namespace xycar
 {
-template <typename PREC>
 class LaneDetector final
 {
 public:

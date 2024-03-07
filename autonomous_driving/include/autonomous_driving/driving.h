@@ -15,17 +15,14 @@ namespace xycar
 {
 /**
  * @brief Lane Keeping System for searching and keeping Hough lines using Hough, Moving average and PID control
- *
- * @tparam Precision of data
  */
 
-template <typename PREC>
 class Driving
 {
 public:
     using Ptr = Driving*;  // Pointer type of this class
-    using ControllerPtr = typename PIDController<PREC>::Ptr;  // Pointer type of PIDController
-    using DetectorPtr = typename LaneDetector<PREC>::Ptr;  // Pointer type of LaneDetecter(It's up to you)
+    using ControllerPtr = typename PIDController::Ptr;  // Pointer type of PIDController
+    using DetectorPtr = typename LaneDetector::Ptr;  // Pointer type of LaneDetecter(It's up to you)
 
     static constexpr int32_t STEERING_ANGLE_LIMIT = 50;  // Xycar Steering Angle Limit
     static constexpr double FPS = 33.0;  // FPS
@@ -57,14 +54,14 @@ private:
 //      *
 //      * @param[in] steering_angle Angle to steer xycar. If over max angle, deaccelerate, otherwise accelerate
 //      */
-    void controlSpeed(PREC steering_angle);
+    void controlSpeed(float steering_angle);
 
     /**
      * @brief publish the motor topic message
      *
      * @param[in] steering_angle Angle to steer xycar actually
      */
-    void drive(PREC steering_angle);
+    void drive(float steering_angle);
 
     ControllerPtr PID_;  // PID Class for Control
     DetectorPtr LaneDetector_;
@@ -86,17 +83,17 @@ private:
     cv::Mat frame_;  // Image from camera. The raw image is converted into cv::Mat
 
     // Xycar Device variables
-    PREC XYCAR_SPEED_, XYCAR_SPEED_MIN_, XYCAR_SPEED_MAX_;  // Speed of xycar
-    PREC XYCAR_SPEED_CONTROL_THRESH_;  // Threshold of angular of xycar
-    PREC DECELERATION_STEP_, ACCELERATION_STEP_;  // How much would (de)accelrate xycar depending on threshold
-    PREC tmp_deceleration_step_;
+    float XYCAR_SPEED_, XYCAR_SPEED_MIN_, XYCAR_SPEED_MAX_;  // Speed of xycar
+    float XYCAR_SPEED_CONTROL_THRESH_;  // Threshold of angular of xycar
+    float DECELERATION_STEP_, ACCELERATION_STEP_;  // How much would (de)accelrate xycar depending on threshold
+    float tmp_deceleration_step_;
 
     // LiDAR variables
     void scanCallback(const sensor_msgs::LaserScan::ConstPtr& message);
     std::vector<float> lidar_data_;
-    PREC front_obs_cnt_, left_obs_cnt_, right_obs_cnt_;
-    PREC FRONT_OBS_ANGLE_, FRONT_OBS_DEPTH_, FRONT_OBS_CNT_THRESH_;
-    PREC SIDE_OBS_DEPTH_, SIDE_OBS_CNT_THRESH_;
+    float front_obs_cnt_, left_obs_cnt_, right_obs_cnt_;
+    float FRONT_OBS_ANGLE_, FRONT_OBS_DEPTH_, FRONT_OBS_CNT_THRESH_;
+    float SIDE_OBS_DEPTH_, SIDE_OBS_CNT_THRESH_;
     int last_obs_pos_ = -1;
 
     // Object Detection variables
@@ -133,13 +130,13 @@ private:
     /**
      * @brief decide whether there is stop line
      *
-     * @param[in] input_img input mage
+     * @param[in] input_img input image
      */
     bool isStopLine(const cv::Mat& input_img);
 
     int last_obj_class_ = -1;
-    PREC RESIZING_X_, RESIZING_Y_;
-    PREC OBJ_DEPTH_THRESH_;
+    float RESIZING_X_, RESIZING_Y_;
+    float OBJ_DEPTH_THRESH_;
 
     bool IS_DEBUGGING_;  // Debugging or not
 };  // class Driving

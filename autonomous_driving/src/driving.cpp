@@ -2,17 +2,16 @@
 
 namespace xycar
 {
-template <typename PREC>
-Driving<PREC>::Driving()
+Driving::Driving()
 {
     std::string config_path;
     NodeHandler_.getParam("config_path", config_path);
     YAML::Node config = YAML::LoadFile(config_path);
 
-    LaneDetector_ = new LaneDetector<PREC>(config);
-    PID_ = new PIDController<PREC>(config["PID"]["P_GAIN"].as<PREC>(),
-                                   config["PID"]["I_GAIN"].as<PREC>(),
-                                   config["PID"]["D_GAIN"].as<PREC>());
+    LaneDetector_ = new LaneDetector(config);
+    PID_ = new PIDController(config["PID"]["P_GAIN"].as<float>(),
+                             config["PID"]["I_GAIN"].as<float>(),
+                             config["PID"]["D_GAIN"].as<float>());
     getConfig(config);
 
     SubscriberImg_ = NodeHandler_.subscribe(SUB_TOPIC_IMG_, QUEUE_SIZE_, &Driving::imageCallback, this);
@@ -21,8 +20,7 @@ Driving<PREC>::Driving()
     PublisherMotor_ = NodeHandler_.advertise<xycar_msgs::xycar_motor>(PUB_TOPIC_MOTOR_, QUEUE_SIZE_);
 }
 
-template <typename PREC>
-void Driving<PREC>::getConfig(const YAML::Node& config)
+void Driving::getConfig(const YAML::Node& config)
 {
     // Topic
     QUEUE_SIZE_ = config["TOPIC"]["QUEUE_SIZE"].as<uint32_t>();
@@ -32,19 +30,19 @@ void Driving<PREC>::getConfig(const YAML::Node& config)
     PUB_TOPIC_MOTOR_ = config["TOPIC"]["PUB_MOTOR_NAME"].as<std::string>();
 
     // Xycar
-    XYCAR_SPEED_ = config["XYCAR"]["START_SPEED"].as<PREC>();
-    XYCAR_SPEED_MIN_ = config["XYCAR"]["MIN_SPEED"].as<PREC>();
-    XYCAR_SPEED_MAX_ = config["XYCAR"]["MAX_SPEED"].as<PREC>();
-    XYCAR_SPEED_CONTROL_THRESH_ = config["XYCAR"]["SPEED_CONTROL_THRESHOLD"].as<PREC>();
-    DECELERATION_STEP_ = config["XYCAR"]["DECELERATION_STEP"].as<PREC>();
-    ACCELERATION_STEP_ = config["XYCAR"]["ACCELERATION_STEP"].as<PREC>();
+    XYCAR_SPEED_ = config["XYCAR"]["START_SPEED"].as<float>();
+    XYCAR_SPEED_MIN_ = config["XYCAR"]["MIN_SPEED"].as<float>();
+    XYCAR_SPEED_MAX_ = config["XYCAR"]["MAX_SPEED"].as<float>();
+    XYCAR_SPEED_CONTROL_THRESH_ = config["XYCAR"]["SPEED_CONTROL_THRESHOLD"].as<float>();
+    DECELERATION_STEP_ = config["XYCAR"]["DECELERATION_STEP"].as<float>();
+    ACCELERATION_STEP_ = config["XYCAR"]["ACCELERATION_STEP"].as<float>();
 
     // LiDAR
-    FRONT_OBS_ANGLE_ = config["LIDAR"]["FRONT_ANGLE"].as<PREC>();
-    FRONT_OBS_DEPTH_ = config["LIDAR"]["FRONT_DEPTH"].as<PREC>();
-    FRONT_OBS_CNT_THRESH_ = config["LIDAR"]["FRONT_OBS_THRESH"].as<PREC>();
-    SIDE_OBS_DEPTH_ = config["LIDAR"]["SIDE_DEPTH"].as<PREC>();
-    SIDE_OBS_CNT_THRESH_ = config["LIDAR"]["SIDE_OBS_THRESH"].as<PREC>();
+    FRONT_OBS_ANGLE_ = config["LIDAR"]["FRONT_ANGLE"].as<float>();
+    FRONT_OBS_DEPTH_ = config["LIDAR"]["FRONT_DEPTH"].as<float>();
+    FRONT_OBS_CNT_THRESH_ = config["LIDAR"]["FRONT_OBS_THRESH"].as<float>();
+    SIDE_OBS_DEPTH_ = config["LIDAR"]["SIDE_DEPTH"].as<float>();
+    SIDE_OBS_CNT_THRESH_ = config["LIDAR"]["SIDE_OBS_THRESH"].as<float>();
 
     // Object Detection
     LABELS_ = config["OBJECT"]["LABELS"].as<std::vector<std::string>>();
@@ -56,22 +54,20 @@ void Driving<PREC>::getConfig(const YAML::Node& config)
                cv::Scalar(0, 0, 255),     // RED SIGN
                cv::Scalar(0, 100, 50),    // GREEN SIGN
                cv::Scalar(255, 255, 0)};  // YELLOW SIGN
-    RESIZING_X_ = config["IMAGE"]["WIDTH"].as<PREC>() / config["OBJECT"]["YOLO_RESOLUTION"].as<PREC>();
-    RESIZING_Y_ = config["IMAGE"]["HEIGHT"].as<PREC>() / config["OBJECT"]["YOLO_RESOLUTION"].as<PREC>();
-    OBJ_DEPTH_THRESH_ = config["OBJECT"]["XY_DEPTH"].as<PREC>();
+    RESIZING_X_ = config["IMAGE"]["WIDTH"].as<float>() / config["OBJECT"]["YOLO_RESOLUTION"].as<float>();
+    RESIZING_Y_ = config["IMAGE"]["HEIGHT"].as<float>() / config["OBJECT"]["YOLO_RESOLUTION"].as<float>();
+    OBJ_DEPTH_THRESH_ = config["OBJECT"]["XY_DEPTH"].as<float>();
 
     IS_DEBUGGING_ = config["DEBUG"].as<bool>();
 }
 
-template <typename PREC>
-Driving<PREC>::~Driving()
+Driving::~Driving()
 {
     delete PID_;
     delete LaneDetector_;
 }
 
-template <typename PREC>
-void Driving<PREC>::run()
+void Driving::run()
 {
     ros::Rate rate(FPS);
 
@@ -324,16 +320,14 @@ void Driving<PREC>::run()
     }
 }
 
-template <typename PREC>
-void Driving<PREC>::imageCallback(const sensor_msgs::Image::ConstPtr& message)
+void Driving::imageCallback(const sensor_msgs::Image::ConstPtr& message)
 {
     cv::Mat src = cv::Mat(message -> height, message -> width, CV_8UC3,
                           const_cast<uint8_t*>(&message -> data[0]), message -> step);
     cv::cvtColor(src, frame_, cv::COLOR_RGB2BGR);
 }
 
-template <typename PREC>
-void Driving<PREC>::scanCallback(const sensor_msgs::LaserScan::ConstPtr& message)
+void Driving::scanCallback(const sensor_msgs::LaserScan::ConstPtr& message)
 {
     lidar_data_ = message -> ranges;
 
@@ -366,15 +360,13 @@ void Driving<PREC>::scanCallback(const sensor_msgs::LaserScan::ConstPtr& message
     }
 }
 
-template <typename PREC>
-void Driving<PREC>::yoloCallback(const yolov3_trt_ros::BoundingBoxes::ConstPtr& message)
+void Driving::yoloCallback(const yolov3_trt_ros::BoundingBoxes::ConstPtr& message)
 {
     predictions_ = *message;
     // std::cout << predictions_.bbox[0] << std::endl;
 }
 
-template <typename PREC>
-void Driving<PREC>::drawBboxes(const cv::Mat& input_img, cv::Mat& output_img,
+void Driving::drawBboxes(const cv::Mat& input_img, cv::Mat& output_img,
                                const yolov3_trt_ros::BoundingBoxes& predictions)
 {
     for (const auto& pred : predictions.bbox)
@@ -400,8 +392,7 @@ void Driving<PREC>::drawBboxes(const cv::Mat& input_img, cv::Mat& output_img,
     }
 }
 
-template <typename PREC>
-void Driving<PREC>::drawLanes(cv::Mat& input_img, const std::vector<cv::Point>& lanes_position)
+void Driving::drawLanes(cv::Mat& input_img, const std::vector<cv::Point>& lanes_position)
 {
     int y = std::min(lanes_position[0].y, lanes_position[1].y);
     cv::Point center_position((lanes_position[0].x + lanes_position[1].x) * 0.5 - 15, y);
@@ -419,8 +410,7 @@ void Driving<PREC>::drawLanes(cv::Mat& input_img, const std::vector<cv::Point>& 
                 cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(255, 200, 0), 2);
 }
 
-template <typename PREC>
-void Driving<PREC>::getClosestObject(const yolov3_trt_ros::BoundingBoxes& predictions,
+void Driving::getClosestObject(const yolov3_trt_ros::BoundingBoxes& predictions,
                                      yolov3_trt_ros::BoundingBox& closest_object)
 {
     // Initialize
@@ -455,8 +445,7 @@ void Driving<PREC>::getClosestObject(const yolov3_trt_ros::BoundingBoxes& predic
     }
 }
 
-template <typename PREC>
-void Driving<PREC>::controlSpeed(PREC steering_angle)
+void Driving::controlSpeed(float steering_angle)
 {
     if (std::abs(steering_angle) > XYCAR_SPEED_CONTROL_THRESH_)
     {
@@ -469,8 +458,7 @@ void Driving<PREC>::controlSpeed(PREC steering_angle)
     XYCAR_SPEED_ = std::min(XYCAR_SPEED_, XYCAR_SPEED_MAX_);
 }
 
-template <typename PREC>
-void Driving<PREC>::drive(PREC steering_angle)
+void Driving::drive(float steering_angle)
 {
     xycar_msgs::xycar_motor motor_message;
     motor_message.angle = std::round(steering_angle);
@@ -480,8 +468,7 @@ void Driving<PREC>::drive(PREC steering_angle)
     PublisherMotor_.publish(motor_message);
 }
 
-template <typename PREC>
-void Driving<PREC>::undistortImg(const cv::Mat& input_img, cv::Mat& output_img)
+void Driving::undistortImg(const cv::Mat& input_img, cv::Mat& output_img)
 {
     cv::Matx<float, 3, 3> camera_matrix(352.494189, 0.000000,   295.823760,
                              0.000000,   353.504572, 239.649689,
@@ -493,8 +480,7 @@ void Driving<PREC>::undistortImg(const cv::Mat& input_img, cv::Mat& output_img)
     cv::remap(input_img, output_img, map1, map2, cv::INTER_LINEAR);
 }
 
-template <typename PREC>
-void Driving<PREC>::undistortLanesPosition(const std::pair<int, int>& lanes_position,
+void Driving::undistortLanesPosition(const std::pair<int, int>& lanes_position,
                                            const int32_t y,
                                            std::vector<cv::Point>& undistorted_lanes_position)
 {
@@ -520,9 +506,7 @@ void Driving<PREC>::undistortLanesPosition(const std::pair<int, int>& lanes_posi
     }
 }
 
-template <typename PREC>
-// bool Driving<PREC>::isStopLine(const cv::Mat& input_img)
-bool Driving<PREC>::isStopLine(const cv::Mat& input_img)
+bool Driving::isStopLine(const cv::Mat& input_img)
 {
     // cv::Mat camera_matrix = (cv::Mat_<double>(3, 3) << 352.494189, 0.000000,   295.823760,
     //                                                    0.000000,   353.504572, 239.649689,
@@ -574,7 +558,4 @@ bool Driving<PREC>::isStopLine(const cv::Mat& input_img)
         return false;
     }
 }
-
-template class Driving<float>;
-template class Driving<double>;
 }  // namespace xycar

@@ -2,8 +2,7 @@
 
 namespace xycar
 {
-template <typename PREC>
-void LaneDetector<PREC>::getConfig(const YAML::Node& config)
+void LaneDetector::getConfig(const YAML::Node& config)
 {
     img_width_ = config["IMAGE"]["WIDTH"].as<int32_t>();
     img_height_ = config["IMAGE"]["HEIGHT"].as<int32_t>();
@@ -18,9 +17,8 @@ void LaneDetector<PREC>::getConfig(const YAML::Node& config)
     is_debugging_ = config["DEBUG"].as<bool>();
 }
 
-template <typename PREC>
-std::tuple<cv::Point, cv::Point, bool, bool> LaneDetector<PREC>::getLinePosition(std::vector<int>& left_x_at_Y_offset,
-                                                                                 std::vector<int>& right_x_at_Y_offset)
+std::tuple<cv::Point, cv::Point, bool, bool> LaneDetector::getLinePosition(std::vector<int>& left_x_at_Y_offset,
+                                                                           std::vector<int>& right_x_at_Y_offset)
 {
     cv::Point left, right;
     bool is_left_detected, is_right_detected;
@@ -98,8 +96,7 @@ std::tuple<cv::Point, cv::Point, bool, bool> LaneDetector<PREC>::getLinePosition
     return std::make_tuple(left, right, is_left_detected, is_right_detected);
 }
 
-template <typename PREC>
-std::pair<std::vector<int>, std::vector<int>> LaneDetector<PREC>::divideLeftRight(std::vector<cv::Vec4f>& lines)
+std::pair<std::vector<int>, std::vector<int>> LaneDetector::divideLeftRight(std::vector<cv::Vec4f>& lines)
 {
     std::vector<int> left_x_at_Y_offset, right_x_at_Y_offset;
     double slope;
@@ -136,8 +133,7 @@ std::pair<std::vector<int>, std::vector<int>> LaneDetector<PREC>::divideLeftRigh
     return std::make_pair(left_x_at_Y_offset, right_x_at_Y_offset);
 }
 
-template <typename PREC>
-std::pair<std::pair<int, int>, std::pair<bool, bool>> LaneDetector<PREC>::getLaneInfo(cv::Mat& frame)
+std::pair<std::pair<int, int>, std::pair<bool, bool>> LaneDetector::getLaneInfo(cv::Mat& frame)
 {
     // Set ROI
     // @@@@@@@@@@@@@@@@@@@@@@@@2 TODO: Find more efficient code
@@ -172,6 +168,4 @@ std::pair<std::pair<int, int>, std::pair<bool, bool>> LaneDetector<PREC>::getLan
     return std::make_pair(lanes_position, is_each_lane_detected);
 }
 
-template class LaneDetector<float>;
-template class LaneDetector<double>;
 }  // namespace xycar
