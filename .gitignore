@@ -4,3 +4,8 @@
 .DS_Store
 *.swp
 __pycache__
+
+# in usb_cam
+.cproject
+.project
+.settings
