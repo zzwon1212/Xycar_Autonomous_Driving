@@ -3,7 +3,7 @@
 namespace xycar
 {
 template <typename PREC>
-void LaneDetector<PREC>::setConfig(const YAML::Node& config)
+void LaneDetector<PREC>::getConfig(const YAML::Node& config)
 {
     img_width_ = config["IMAGE"]["WIDTH"].as<int32_t>();
     img_height_ = config["IMAGE"]["HEIGHT"].as<int32_t>();

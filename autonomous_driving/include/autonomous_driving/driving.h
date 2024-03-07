@@ -50,7 +50,7 @@ private:
      *
      * @param[in] config Configuration for searching and keeping Hough lines using Hough, Moving average and PID control
      */
-    void setParams(const YAML::Node& config);
+    void getConfig(const YAML::Node& config);
 
 //     /**
 //      * @brief Control the speed of xycar

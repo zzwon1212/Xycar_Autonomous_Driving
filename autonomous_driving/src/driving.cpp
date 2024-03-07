@@ -10,9 +10,10 @@ Driving<PREC>::Driving()
     YAML::Node config = YAML::LoadFile(config_path);
 
     LaneDetector_ = new LaneDetector<PREC>(config);
-    PID_ = new PIDController<PREC>(config["PID"]["P_GAIN"].as<PREC>(), config["PID"]["I_GAIN"].as<PREC>(), config["PID"]["D_GAIN"].as<PREC>());
-
-    setParams(config);
+    PID_ = new PIDController<PREC>(config["PID"]["P_GAIN"].as<PREC>(),
+                                   config["PID"]["I_GAIN"].as<PREC>(),
+                                   config["PID"]["D_GAIN"].as<PREC>());
+    getConfig(config);
 
     SubscriberImg_ = NodeHandler_.subscribe(SUB_TOPIC_IMG_, QUEUE_SIZE_, &Driving::imageCallback, this);
     SubscriberScan_ = NodeHandler_.subscribe(SUB_TOPIC_SCAN_, QUEUE_SIZE_, &Driving::scanCallback, this);
@@ -21,7 +22,7 @@ Driving<PREC>::Driving()
 }
 
 template <typename PREC>
-void Driving<PREC>::setParams(const YAML::Node& config)
+void Driving<PREC>::getConfig(const YAML::Node& config)
 {
     // Topic
     QUEUE_SIZE_ = config["TOPIC"]["QUEUE_SIZE"].as<uint32_t>();
@@ -47,16 +48,14 @@ void Driving<PREC>::setParams(const YAML::Node& config)
 
     // Object Detection
     LABELS_ = config["OBJECT"]["LABELS"].as<std::vector<std::string>>();
-    COLORS_ = {
-        cv::Scalar(50, 200, 255),  // LEFT
-        cv::Scalar(255, 0, 255),   // RIGHT
-        cv::Scalar(255, 0, 0),     // CROSSWALK
-        cv::Scalar(0, 0, 170),     // STOP SIGN
-        cv::Scalar(0, 170, 0),     // CAR
-        cv::Scalar(0, 0, 255),     // RED SIGN
-        cv::Scalar(0, 100, 50),    // GREEN SIGN
-        cv::Scalar(255, 255, 0)    // YELLOW SIGN
-    };
+    COLORS_ = {cv::Scalar(50, 200, 255),  // LEFT
+               cv::Scalar(255, 0, 255),   // RIGHT
+               cv::Scalar(255, 0, 0),     // CROSSWALK
+               cv::Scalar(0, 0, 170),     // STOP SIGN
+               cv::Scalar(0, 170, 0),     // CAR
+               cv::Scalar(0, 0, 255),     // RED SIGN
+               cv::Scalar(0, 100, 50),    // GREEN SIGN
+               cv::Scalar(255, 255, 0)};  // YELLOW SIGN
     RESIZING_X_ = config["IMAGE"]["WIDTH"].as<PREC>() / config["OBJECT"]["YOLO_RESOLUTION"].as<PREC>();
     RESIZING_Y_ = config["IMAGE"]["HEIGHT"].as<PREC>() / config["OBJECT"]["YOLO_RESOLUTION"].as<PREC>();
     OBJ_DEPTH_THRESH_ = config["OBJECT"]["XY_DEPTH"].as<PREC>();

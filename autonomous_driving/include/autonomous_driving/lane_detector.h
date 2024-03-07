@@ -19,7 +19,7 @@ public:
 
     LaneDetector(const YAML::Node& config)
     {
-        setConfig(config);
+        getConfig(config);
         prev_left_ = cv::Point(0, moving_y_offset_);
         prev_right_ = cv::Point(img_width_, y_offset_);
         leftC_ = 0;
@@ -41,7 +41,7 @@ private:
     cv::Point prev_left_, prev_right_;
     int leftC_, rightC_;
 
-    void setConfig(const YAML::Node& config);
+    void getConfig(const YAML::Node& config);
     std::pair<std::vector<int>, std::vector<int>> divideLeftRight(std::vector<cv::Vec4f>& lines);
     std::tuple<cv::Point, cv::Point, bool, bool> getLinePosition(std::vector<int>& left_x_at_Y_offset,
                                                                  std::vector<int>& right_x_at_Y_offset);
