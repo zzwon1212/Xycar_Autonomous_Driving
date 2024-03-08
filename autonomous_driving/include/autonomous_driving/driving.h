@@ -41,7 +41,7 @@ public:
     void run();
 
 private:
-    static constexpr int32_t STEERING_ANGLE_LIMIT = 50.0;  // Xycar Steering Angle Limit
+    static constexpr float STEERING_ANGLE_LIMIT = 50.0;  // Xycar Steering Angle Limit
 
     /**
      * @brief Set the parameters from config file

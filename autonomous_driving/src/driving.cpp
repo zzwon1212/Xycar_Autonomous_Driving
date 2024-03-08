@@ -99,10 +99,9 @@ void Driving::run()
         bool is_left_detected, is_right_detected;
         std::tie(is_left_detected, is_right_detected) = is_each_lane_detected;
 
-        float gap = (center_lane_position - IMAGE_WIDTH_ * 0.5);  // @@@@@@@@@@@@@@@@ TODO: Any error?
+        float gap = (center_lane_position - IMAGE_WIDTH_ * 0.5);
         float steering_angle = PID_ -> getPIDOutput(gap);
-        // std::cout << gap << std::endl;
-        // std::cout << steering_angle << std::endl;
+        steering_angle = (steering_angle > 50.0) ? 50.0 : (steering_angle < -50.0) ? -50.0 : steering_angle;
         tmp_deceleration_step_ = std::round(std::abs(gap) * 0.1) * DECELERATION_STEP_;
 
         cv::Mat img_undistorted;
