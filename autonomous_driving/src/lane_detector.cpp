@@ -29,7 +29,7 @@ void LaneDetector::getConfig(const YAML::Node& config)
     MAX_GAP_ = config["HOUGH"]["MAX_GAP"].as<uint16_t>();
 }
 
-std::pair<std::vector<float>, std::vector<float>> LaneDetector::divideLeftRight(std::vector<cv::Vec4f>& lines)
+std::pair<std::vector<float>, std::vector<float>> LaneDetector::divideLeftRight(const std::vector<cv::Vec4f>& lines)
 {
     std::vector<float> left_x_at_Y_offset, right_x_at_Y_offset;
     float slope;
@@ -66,8 +66,8 @@ std::pair<std::vector<float>, std::vector<float>> LaneDetector::divideLeftRight(
     return std::make_pair(left_x_at_Y_offset, right_x_at_Y_offset);
 }
 
-std::tuple<cv::Point2f, cv::Point2f, bool, bool> LaneDetector::getLinePosition(std::vector<float>& left_x_at_Y_offset,
-                                                                           std::vector<float>& right_x_at_Y_offset)
+std::tuple<cv::Point2f, cv::Point2f, bool, bool> LaneDetector::getLinePosition(
+    const std::vector<float>& left_x_at_Y_offset, const std::vector<float>& right_x_at_Y_offset)
 {
     cv::Point2f left, right;
     bool is_left_detected, is_right_detected;
@@ -145,7 +145,7 @@ std::tuple<cv::Point2f, cv::Point2f, bool, bool> LaneDetector::getLinePosition(s
     return std::make_tuple(left, right, is_left_detected, is_right_detected);
 }
 
-std::pair<std::pair<float, float>, std::pair<bool, bool>> LaneDetector::getLaneInfo(cv::Mat& frame)
+std::pair<std::pair<float, float>, std::pair<bool, bool>> LaneDetector::getLaneInfo(const cv::Mat& frame)
 {
     // Set ROI
     // @@@@@@@@@@@@@@@@@@@@@@@@2 TODO: Find more efficient code

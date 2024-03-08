@@ -47,12 +47,12 @@ void Driving::getConfig(const YAML::Node& config)
     // Object Detection
     LABELS_ = config["OBJECT"]["LABELS"].as<std::vector<std::string>>();
     COLORS_ = {cv::Scalar(50, 200, 255),  // LEFT
-               cv::Scalar(255, 0, 255),   // RIGHT
-               cv::Scalar(255, 0, 0),     // CROSSWALK
-               cv::Scalar(0, 0, 170),     // STOP SIGN
-               cv::Scalar(0, 170, 0),     // CAR
-               cv::Scalar(0, 0, 255),     // RED SIGN
-               cv::Scalar(0, 100, 50),    // GREEN SIGN
+               cv::Scalar(255, 0, 255),  // RIGHT
+               cv::Scalar(255, 0, 0),   // CROSSWALK
+               cv::Scalar(0, 0, 170),   // STOP SIGN
+               cv::Scalar(0, 170, 0),   // CAR
+               cv::Scalar(0, 0, 255),   // RED SIGN
+               cv::Scalar(0, 100, 50),  // GREEN SIGN
                cv::Scalar(255, 255, 0)};  // YELLOW SIGN
     IMAGE_WIDTH_ = config["IMAGE"]["WIDTH"].as<uint16_t>();
     IMAGE_HEIGHT_ = config["IMAGE"]["HEIGHT"].as<uint16_t>();
@@ -103,6 +103,8 @@ void Driving::run()
         float steering_angle = PID_->getPIDOutput(gap);
         steering_angle = (steering_angle > 50.0) ? 50.0 : (steering_angle < -50.0) ? -50.0 : steering_angle;
         tmp_deceleration_step_ = std::round(std::abs(gap) * 0.1) * DECELERATION_STEP_;
+        // std::cout << steering_angle << std::endl;
+        // std::cout << " " << std::endl;
 
         cv::Mat img_undistorted;
         undistortImg(frame_, img_undistorted);
@@ -118,7 +120,7 @@ void Driving::run()
                 cv::Point(580, 400)
             };
             undistortLanesPosition(lanes_position, LaneDetector_->moving_y_offset_, undistorted_lanes_position);
-            drawLanes(result, undistorted_lanes_position);
+            drawLanes(undistorted_lanes_position, result);
 
             cv::imshow("Result", result);
             cv::waitKey(1);
@@ -396,26 +398,26 @@ void Driving::drawBboxes(const cv::Mat& input_img, cv::Mat& output_img,
     }
 }
 
-void Driving::drawLanes(cv::Mat& input_img, const std::vector<cv::Point>& lanes_position)
+void Driving::drawLanes(const std::vector<cv::Point>& lanes_position, cv::Mat& input_output_img)
 {
     int y = std::min(lanes_position[0].y, lanes_position[1].y);
     cv::Point center_position((lanes_position[0].x + lanes_position[1].x) * 0.5 - 15, y);
-    cv::Point img_center(static_cast<uint16_t>(input_img.cols * 0.5), y);
+    cv::Point img_center(static_cast<uint16_t>(input_output_img.cols * 0.5), y);
 
-    cv::circle(input_img, lanes_position[0], 6, cv::Scalar(0, 255, 0), -1);
-    cv::circle(input_img, lanes_position[1], 6, cv::Scalar(0, 255, 0), -1);
-    cv::circle(input_img, img_center, 6, cv::Scalar(50, 50, 255), -1);
-    cv::putText(input_img, "Car",
+    cv::circle(input_output_img, lanes_position[0], 6, cv::Scalar(0, 255, 0), -1);
+    cv::circle(input_output_img, lanes_position[1], 6, cv::Scalar(0, 255, 0), -1);
+    cv::circle(input_output_img, img_center, 6, cv::Scalar(50, 50, 255), -1);
+    cv::putText(input_output_img, "Car",
                 cv::Point(img_center.x - 20, img_center.y + 20),
                 cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(50, 50, 255), 2);
-    cv::circle(input_img, center_position, 6, cv::Scalar(255, 200, 0), -1);
-    cv::putText(input_img, "Lane",
+    cv::circle(input_output_img, center_position, 6, cv::Scalar(255, 200, 0), -1);
+    cv::putText(input_output_img, "Lane",
                 cv::Point(center_position.x - 20, center_position.y - 10),
                 cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(255, 200, 0), 2);
 }
 
-void Driving::getClosestObject(const yolov3_trt_ros::BoundingBoxes& predictions,
-                                     yolov3_trt_ros::BoundingBox& closest_object)
+void Driving::getClosestObject(
+    const yolov3_trt_ros::BoundingBoxes& predictions, yolov3_trt_ros::BoundingBox& closest_object)
 {
     // Initialize
     closest_object.prob = -1;
@@ -449,7 +451,7 @@ void Driving::getClosestObject(const yolov3_trt_ros::BoundingBoxes& predictions,
     }
 }
 
-void Driving::controlSpeed(float steering_angle)
+void Driving::controlSpeed(const float steering_angle)
 {
     if (std::abs(steering_angle) > XYCAR_SPEED_CONTROL_THRESH_)
     {
@@ -462,7 +464,7 @@ void Driving::controlSpeed(float steering_angle)
     XYCAR_SPEED_ = std::min(XYCAR_SPEED_, XYCAR_SPEED_MAX_);
 }
 
-void Driving::drive(float steering_angle)
+void Driving::drive(const float steering_angle)
 {
     xycar_msgs::xycar_motor motor_message;
     motor_message.angle = std::round(steering_angle);

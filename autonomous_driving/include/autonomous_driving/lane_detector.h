@@ -13,7 +13,7 @@ public:
 
     LaneDetector(const YAML::Node& config);
 
-    std::pair<std::pair<float, float>, std::pair<bool, bool>> getLaneInfo(cv::Mat& frame);
+    std::pair<std::pair<float, float>, std::pair<bool, bool>> getLaneInfo(const cv::Mat& frame);
 
     void setYOffset(float speed);
     uint16_t moving_y_offset_;
@@ -21,10 +21,10 @@ public:
 private:
     void getConfig(const YAML::Node& config);
 
-    std::pair<std::vector<float>, std::vector<float>> divideLeftRight(std::vector<cv::Vec4f>& lines);
+    std::pair<std::vector<float>, std::vector<float>> divideLeftRight(const std::vector<cv::Vec4f>& lines);
 
     std::tuple<cv::Point2f, cv::Point2f, bool, bool> getLinePosition(
-        std::vector<float>& left_x_at_Y_offset, std::vector<float>& right_x_at_Y_offset);
+        const std::vector<float>& left_x_at_Y_offset, const std::vector<float>& right_x_at_Y_offset);
 
     // Configurations
     uint16_t IMG_WIDTH_, Y_OFFSET_, Y_GAP_;

@@ -59,14 +59,14 @@ private:
      *
      * @param[in] steering_angle Angle to steer xycar. If over max angle, deaccelerate, otherwise accelerate
      */
-    void controlSpeed(float steering_angle);
+    void controlSpeed(const float steering_angle);
 
     /**
      * @brief publish the motor topic message
      *
      * @param[in] steering_angle Angle to steer xycar actually
      */
-    void drive(float steering_angle);
+    void drive(const float steering_angle);
 
     void imageCallback(const sensor_msgs::Image::ConstPtr& message);
     void scanCallback(const sensor_msgs::LaserScan::ConstPtr& message);
@@ -83,11 +83,11 @@ private:
      */
     void drawBboxes(const cv::Mat& input_img, cv::Mat& output_img, const yolov3_trt_ros::BoundingBoxes& predictions);
 
-        void undistortLanesPosition(
+    void undistortLanesPosition(
         const std::pair<float, float>& lanes_position,
         const int32_t y,
         std::vector<cv::Point>& undistorted_lanes_position);
-    void drawLanes(cv::Mat& input_img, const std::vector<cv::Point>& lanes_position);
+    void drawLanes(const std::vector<cv::Point>& lanes_position, cv::Mat& input_output_img);
 
     /**
      * @brief get the closest object detected by YOLO
