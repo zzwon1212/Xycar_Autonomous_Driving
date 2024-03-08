@@ -9,3 +9,6 @@ __pycache__
 .cproject
 .project
 .settings
+
+# rosbag
+*.bag
