@@ -93,14 +93,14 @@ void Driving::run()
         // Get appropriate steering angle to drive at current frame
         std::pair<float, float> lanes_position;
         std::pair<bool, bool> is_each_lane_detected;
-        std::tie(lanes_position, is_each_lane_detected) = LaneDetector_ -> getLaneInfo(frame_);
+        std::tie(lanes_position, is_each_lane_detected) = LaneDetector_->getLaneInfo(frame_);
 
         float center_lane_position = (lanes_position.first + lanes_position.second) * 0.5 + 30;
         bool is_left_detected, is_right_detected;
         std::tie(is_left_detected, is_right_detected) = is_each_lane_detected;
 
         float gap = (center_lane_position - IMAGE_WIDTH_ * 0.5);
-        float steering_angle = PID_ -> getPIDOutput(gap);
+        float steering_angle = PID_->getPIDOutput(gap);
         steering_angle = (steering_angle > 50.0) ? 50.0 : (steering_angle < -50.0) ? -50.0 : steering_angle;
         tmp_deceleration_step_ = std::round(std::abs(gap) * 0.1) * DECELERATION_STEP_;
 
@@ -117,7 +117,7 @@ void Driving::run()
                 cv::Point(60, 400),
                 cv::Point(580, 400)
             };
-            undistortLanesPosition(lanes_position, LaneDetector_ -> moving_y_offset_, undistorted_lanes_position);
+            undistortLanesPosition(lanes_position, LaneDetector_->moving_y_offset_, undistorted_lanes_position);
             drawLanes(result, undistorted_lanes_position);
 
             cv::imshow("Result", result);
@@ -324,14 +324,14 @@ void Driving::run()
 
 void Driving::imageCallback(const sensor_msgs::Image::ConstPtr& message)
 {
-    cv::Mat src = cv::Mat(message -> height, message -> width, CV_8UC3,
-                          const_cast<uint8_t*>(&message -> data[0]), message -> step);
+    cv::Mat src = cv::Mat(message->height, message->width, CV_8UC3,
+                          const_cast<uint8_t*>(&message->data[0]), message->step);
     cv::cvtColor(src, frame_, cv::COLOR_RGB2BGR);
 }
 
 void Driving::scanCallback(const sensor_msgs::LaserScan::ConstPtr& message)
 {
-    lidar_data_ = message -> ranges;  // size = 505
+    lidar_data_ = message->ranges;  // size = 505
 
     uint16_t front_idx = static_cast<uint16_t>(((FRONT_OBS_ANGLE_ * 0.5) / 360) * 505);  // 45 degree
     uint16_t side_idx = static_cast<uint16_t>(0.25 * 505);  // 90 degree
@@ -467,7 +467,7 @@ void Driving::drive(float steering_angle)
     xycar_msgs::xycar_motor motor_message;
     motor_message.angle = std::round(steering_angle);
     controlSpeed(steering_angle);
-    LaneDetector_ -> setYOffset(XYCAR_SPEED_);
+    LaneDetector_->setYOffset(XYCAR_SPEED_);
     motor_message.speed = std::round(XYCAR_SPEED_);
     PublisherMotor_.publish(motor_message);
 }
