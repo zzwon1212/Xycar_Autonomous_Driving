@@ -2,6 +2,11 @@
 
 namespace xycar
 {
+PIDController::PIDController(float P, float I, float D) :
+    gain_P_(P), gain_I_(I), gain_D_(D)
+{
+}
+
 float PIDController::getPIDOutput(float gap_between_lane_and_car_)
 {
     float castError = static_cast<float>(gap_between_lane_and_car_);

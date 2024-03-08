@@ -16,19 +16,12 @@ public:
     static inline const cv::Scalar GREEN = {0, 255, 0};
     static inline const cv::Scalar BLUE = {255, 0, 0};
 
-    LaneDetector(const YAML::Node& config)
-    {
-        getConfig(config);
-        prev_left_ = cv::Point(0, moving_y_offset_);
-        prev_right_ = cv::Point(IMG_WIDTH_, Y_OFFSET_);
-        leftC_ = 0;
-        rightC_ = 0;
-    }
+    LaneDetector(const YAML::Node& config);
 
     std::pair<std::pair<float, float>, std::pair<bool, bool>> getLaneInfo(cv::Mat& frame);
 
     uint16_t moving_y_offset_;
-    void setYOffset(float speed){moving_y_offset_ = Y_OFFSET_ - speed * Y_GAIN_;}
+    void setYOffset(float speed);
 
 private:
     uint16_t IMG_WIDTH_, Y_OFFSET_, Y_GAP_;
@@ -42,7 +35,7 @@ private:
 
     std::pair<std::vector<float>, std::vector<float>> divideLeftRight(std::vector<cv::Vec4f>& lines);
     std::tuple<cv::Point2f, cv::Point2f, bool, bool> getLinePosition(std::vector<float>& left_x_at_Y_offset,
-                                                                 std::vector<float>& right_x_at_Y_offset);
+                                                                     std::vector<float>& right_x_at_Y_offset);
 };
 }  // namespace xycar
 

@@ -2,6 +2,15 @@
 
 namespace xycar
 {
+LaneDetector::LaneDetector(const YAML::Node& config)
+{
+    getConfig(config);
+    prev_left_ = cv::Point(0, moving_y_offset_);
+    prev_right_ = cv::Point(IMG_WIDTH_, Y_OFFSET_);
+    leftC_ = 0;
+    rightC_ = 0;
+}
+
 void LaneDetector::getConfig(const YAML::Node& config)
 {
     // Image
@@ -169,6 +178,11 @@ std::pair<std::pair<float, float>, std::pair<bool, bool>> LaneDetector::getLaneI
     std::pair<bool, bool> is_each_lane_detected = std::make_pair(is_left_detected, is_right_detected);
 
     return std::make_pair(lanes_position, is_each_lane_detected);
+}
+
+void LaneDetector::setYOffset(float speed)
+{
+    moving_y_offset_ = Y_OFFSET_ - speed * Y_GAIN_;
 }
 
 }  // namespace xycar
