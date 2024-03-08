@@ -20,7 +20,7 @@ public:
     {
         getConfig(config);
         prev_left_ = cv::Point(0, moving_y_offset_);
-        prev_right_ = cv::Point(img_width_, y_offset_);
+        prev_right_ = cv::Point(IMG_WIDTH_, Y_OFFSET_);
         leftC_ = 0;
         rightC_ = 0;
     }
@@ -28,14 +28,13 @@ public:
     std::pair<std::pair<float, float>, std::pair<bool, bool>> getLaneInfo(cv::Mat& frame);
 
     uint16_t moving_y_offset_;
-    void setYOffset(float speed){moving_y_offset_ = y_offset_ - speed * y_gain_;}
+    void setYOffset(float speed){moving_y_offset_ = Y_OFFSET_ - speed * Y_GAIN_;}
 
 private:
-    uint16_t img_width_, y_offset_, y_gap_;
-    float y_gain_;
-    uint16_t low_threshold_, high_threshold_;  // Canny params
-    uint16_t min_pixel_, min_line_, max_gap_;  // HoughlinesP params
-    bool is_debugging_;
+    uint16_t IMG_WIDTH_, Y_OFFSET_, Y_GAP_;
+    float Y_GAIN_;
+    uint16_t LOW_THRESH_, HIGH_THRESH_;  // Canny params
+    uint16_t MIN_PIXEL_, MIN_LINE_, MAX_GAP_;  // HoughlinesP params
     cv::Point2f prev_left_, prev_right_;
     uint32_t leftC_, rightC_;
 

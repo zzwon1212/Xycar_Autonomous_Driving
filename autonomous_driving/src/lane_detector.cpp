@@ -5,20 +5,19 @@ namespace xycar
 void LaneDetector::getConfig(const YAML::Node& config)
 {
     // Image
-    img_width_ = config["IMAGE"]["WIDTH"].as<uint16_t>();
-    y_offset_ = config["IMAGE"]["Y_OFFSET"].as<uint16_t>();
-    y_gap_ = config["IMAGE"]["Y_GAP"].as<uint16_t>();
-    y_gain_ = config["IMAGE"]["Y_GAIN"].as<float>();
-    is_debugging_ = config["DEBUG"].as<bool>();
+    IMG_WIDTH_ = config["IMAGE"]["WIDTH"].as<uint16_t>();
+    Y_OFFSET_ = config["IMAGE"]["Y_OFFSET"].as<uint16_t>();
+    Y_GAP_ = config["IMAGE"]["Y_GAP"].as<uint16_t>();
+    Y_GAIN_ = config["IMAGE"]["Y_GAIN"].as<float>();
 
     // Canny
-    low_threshold_ = config["CANNY"]["LOW_THRESHOLD"].as<uint16_t>();
-    high_threshold_ = config["CANNY"]["HIGH_THRESHOLD"].as<uint16_t>();
+    LOW_THRESH_ = config["CANNY"]["LOW_THRESHOLD"].as<uint16_t>();
+    HIGH_THRESH_ = config["CANNY"]["HIGH_THRESHOLD"].as<uint16_t>();
 
     // Hough
-    min_pixel_ = config["HOUGH"]["MIN_PIXEL"].as<uint16_t>();
-    min_line_ = config["HOUGH"]["MIN_LINE"].as<uint16_t>();
-    max_gap_ = config["HOUGH"]["MAX_GAP"].as<uint16_t>();
+    MIN_PIXEL_ = config["HOUGH"]["MIN_PIXEL"].as<uint16_t>();
+    MIN_LINE_ = config["HOUGH"]["MIN_LINE"].as<uint16_t>();
+    MAX_GAP_ = config["HOUGH"]["MAX_GAP"].as<uint16_t>();
 }
 
 std::pair<std::vector<float>, std::vector<float>> LaneDetector::divideLeftRight(std::vector<cv::Vec4f>& lines)
@@ -143,10 +142,10 @@ std::pair<std::pair<float, float>, std::pair<bool, bool>> LaneDetector::getLaneI
     // @@@@@@@@@@@@@@@@@@@@@@@@2 TODO: Find more efficient code
     cv::Mat mask = cv::Mat::zeros(frame.size(), CV_8UC1);
     std::vector<cv::Point> square;
-    square.push_back(cv::Point(0, moving_y_offset_ + y_gap_));
-    square.push_back(cv::Point(0, moving_y_offset_ - y_gap_));
-    square.push_back(cv::Point(frame.cols, moving_y_offset_ - y_gap_));
-    square.push_back(cv::Point(frame.cols, moving_y_offset_ + y_gap_));
+    square.push_back(cv::Point(0, moving_y_offset_ + Y_GAP_));
+    square.push_back(cv::Point(0, moving_y_offset_ - Y_GAP_));
+    square.push_back(cv::Point(frame.cols, moving_y_offset_ - Y_GAP_));
+    square.push_back(cv::Point(frame.cols, moving_y_offset_ + Y_GAP_));
     cv::fillConvexPoly(mask, &square[0], 4, cv::Scalar(255));
 
     // Get HoughLines
@@ -154,10 +153,10 @@ std::pair<std::pair<float, float>, std::pair<bool, bool>> LaneDetector::getLaneI
     std::vector<cv::Vec4f> lines;
     cv::cvtColor(frame, img_gray, cv::COLOR_BGR2GRAY);
     cv::GaussianBlur(img_gray, img_blur, cv::Size(), 2.0);
-    cv::Canny(img_blur, img_edge, low_threshold_, high_threshold_);
+    cv::Canny(img_blur, img_edge, LOW_THRESH_, HIGH_THRESH_);
     cv::bitwise_and(img_edge, mask, output, mask=mask);  // @@@@@@@@@@ OUTPUT NAME ???
     cv::threshold(output, img_binary, 190, 255, cv::THRESH_BINARY);
-    cv::HoughLinesP(img_binary, lines, 1, CV_PI/180, min_pixel_, min_line_, max_gap_);
+    cv::HoughLinesP(img_binary, lines, 1, CV_PI/180, MIN_PIXEL_, MIN_LINE_, MAX_GAP_);
 
     std::vector<float> left_lines, right_lines;
     std::tie(left_lines, right_lines) = divideLeftRight(lines);
