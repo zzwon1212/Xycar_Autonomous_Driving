@@ -1,6 +1,6 @@
 <launch>
     <!-- Rosbag -->
-    <node name="rosbag_player" pkg="rosbag" type="play" args="-r 2 /workspace/Programmers/xycar_ws_origin/image_raw_2.bag"/>
+    <node name="rosbag_player" pkg="rosbag" type="play" args="-r 2 $(find autonomous_driving)/../image_raw_2.bag"/>
 
     <!-- Config -->
     <param name="config_path" type="str" value="$(find autonomous_driving)/config/config.yaml"/>
