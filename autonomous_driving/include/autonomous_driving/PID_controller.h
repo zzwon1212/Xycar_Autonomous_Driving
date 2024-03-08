@@ -20,10 +20,6 @@ public:
      * @param[in] I Integral control gain to remove error of steady-state
      * @param[in] D Differential control gain to relieve overshoot and improve stability
      */
-    // PIDController(float P, float I, float D) :
-    //     gain_P_(P), gain_I_(I), gain_D_(D)
-    // {
-    // }
     PIDController(float P, float I, float D);
 
     /**
