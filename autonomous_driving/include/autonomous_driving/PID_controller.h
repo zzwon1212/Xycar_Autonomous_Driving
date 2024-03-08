@@ -31,7 +31,7 @@ public:
      * @param[in] gap_between_lane_and_car_ Error between estimated position x and half of the image
      * @return The result of PID controller
      */
-    float getPIDOutput(int32_t gap_between_lane_and_car_);
+    float getPIDOutput(float gap_between_lane_and_car_);
 
 private:
     const float gain_P_;  // Proportional control gain. The higher, the more powerful

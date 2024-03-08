@@ -2,7 +2,7 @@
 
 namespace xycar
 {
-float PIDController::getPIDOutput(int32_t gap_between_lane_and_car_)
+float PIDController::getPIDOutput(float gap_between_lane_and_car_)
 {
     float castError = static_cast<float>(gap_between_lane_and_car_);
     gain_error_D_ = castError - gain_error_P_;

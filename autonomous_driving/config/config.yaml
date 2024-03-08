@@ -18,17 +18,14 @@ PID:
   I_GAIN: 0.000
   D_GAIN: 0.007
 
-MOVING_AVERAGE_FILTER:
-  SAMPLE_SIZE: 30
-
 CANNY:
   LOW_THRESHOLD : 100
   HIGH_THRESHOLD : 150
 
 HOUGH:
-  MIN_PIXEL : 40
-  MIN_LINE : 35
-  MAX_GAP : 10
+  MIN_PIXEL: 40
+  MIN_LINE: 35
+  MAX_GAP: 10
 
 TOPIC:
   QUEUE_SIZE: 1
@@ -38,15 +35,15 @@ TOPIC:
   PUB_MOTOR_NAME: /xycar_motor
 
 LIDAR:
-  FRONT_ANGLE: 45
+  FRONT_ANGLE: 45.0
   FRONT_DEPTH: 0.3
-  FRONT_OBS_THRESH: 50 # 63
   SIDE_DEPTH: 0.25
+  FRONT_OBS_THRESH: 50 # 63
   SIDE_OBS_THRESH: 10
 
 OBJECT:
-  LABELS: ["Left", "Right", "Crosswalk", "Stopsign", "Car", "Red", "Green", "Yellow"]
+  LABELS: [Left, Right, Crosswalk, Stopsign, Car, Red, Green, Yellow]
   YOLO_RESOLUTION: 416
-  XY_DEPTH: 115
+  XY_DEPTH: 115.0
 
 DEBUG: True

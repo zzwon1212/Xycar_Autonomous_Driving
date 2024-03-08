@@ -40,9 +40,9 @@ void Driving::getConfig(const YAML::Node& config)
     // LiDAR
     FRONT_OBS_ANGLE_ = config["LIDAR"]["FRONT_ANGLE"].as<float>();
     FRONT_OBS_DEPTH_ = config["LIDAR"]["FRONT_DEPTH"].as<float>();
-    FRONT_OBS_CNT_THRESH_ = config["LIDAR"]["FRONT_OBS_THRESH"].as<float>();
     SIDE_OBS_DEPTH_ = config["LIDAR"]["SIDE_DEPTH"].as<float>();
-    SIDE_OBS_CNT_THRESH_ = config["LIDAR"]["SIDE_OBS_THRESH"].as<float>();
+    FRONT_OBS_CNT_THRESH_ = config["LIDAR"]["FRONT_OBS_THRESH"].as<uint16_t>();
+    SIDE_OBS_CNT_THRESH_ = config["LIDAR"]["SIDE_OBS_THRESH"].as<uint16_t>();
 
     // Object Detection
     LABELS_ = config["OBJECT"]["LABELS"].as<std::vector<std::string>>();
@@ -54,8 +54,11 @@ void Driving::getConfig(const YAML::Node& config)
                cv::Scalar(0, 0, 255),     // RED SIGN
                cv::Scalar(0, 100, 50),    // GREEN SIGN
                cv::Scalar(255, 255, 0)};  // YELLOW SIGN
-    RESIZING_X_ = config["IMAGE"]["WIDTH"].as<float>() / config["OBJECT"]["YOLO_RESOLUTION"].as<float>();
-    RESIZING_Y_ = config["IMAGE"]["HEIGHT"].as<float>() / config["OBJECT"]["YOLO_RESOLUTION"].as<float>();
+    IMAGE_WIDTH_ = config["IMAGE"]["WIDTH"].as<uint16_t>();
+    IMAGE_HEIGHT_ = config["IMAGE"]["HEIGHT"].as<uint16_t>();
+    YOLO_RESOLUTION_ = config["OBJECT"]["YOLO_RESOLUTION"].as<uint16_t>();
+    RESIZING_X_ = IMAGE_WIDTH_ / static_cast<float>(YOLO_RESOLUTION_);
+    RESIZING_Y_ = IMAGE_HEIGHT_ / static_cast<float>(YOLO_RESOLUTION_);
     OBJ_DEPTH_THRESH_ = config["OBJECT"]["XY_DEPTH"].as<float>();
 
     IS_DEBUGGING_ = config["DEBUG"].as<bool>();
@@ -88,18 +91,18 @@ void Driving::run()
         }
 
         // Get appropriate steering angle to drive at current frame
-        std::pair<int, int> lanes_position;
+        std::pair<float, float> lanes_position;
         std::pair<bool, bool> is_each_lane_detected;
         std::tie(lanes_position, is_each_lane_detected) = LaneDetector_ -> getLaneInfo(frame_);
 
-        double center_lane_position = (lanes_position.first + lanes_position.second) * 0.5 + 30;
+        float center_lane_position = (lanes_position.first + lanes_position.second) * 0.5 + 30;
         bool is_left_detected, is_right_detected;
         std::tie(is_left_detected, is_right_detected) = is_each_lane_detected;
 
-        double gap = (center_lane_position - frame_.cols * 0.5);  // @@@@@@@@@@@@@@@@ TODO: Any error?
-        auto steering_angle = std::max(std::min(STEERING_ANGLE_LIMIT,
-                                       (int32_t) PID_ -> getPIDOutput(gap)),
-                                       -1 * STEERING_ANGLE_LIMIT);
+        float gap = (center_lane_position - IMAGE_WIDTH_ * 0.5);  // @@@@@@@@@@@@@@@@ TODO: Any error?
+        float steering_angle = PID_ -> getPIDOutput(gap);
+        // std::cout << gap << std::endl;
+        // std::cout << steering_angle << std::endl;
         tmp_deceleration_step_ = std::round(std::abs(gap) * 0.1) * DECELERATION_STEP_;
 
         cv::Mat img_undistorted;
@@ -115,7 +118,7 @@ void Driving::run()
                 cv::Point(60, 400),
                 cv::Point(580, 400)
             };
-            undistortLanesPosition(lanes_position, LaneDetector_ ->  moving_y_offset_, undistorted_lanes_position);
+            undistortLanesPosition(lanes_position, LaneDetector_ -> moving_y_offset_, undistorted_lanes_position);
             drawLanes(result, undistorted_lanes_position);
 
             cv::imshow("Result", result);
@@ -155,7 +158,7 @@ void Driving::run()
 
         yolov3_trt_ros::BoundingBox closest_object;
         getClosestObject(predictions_, closest_object);
-        int depth = sqrt(closest_object.xdepth*closest_object.xdepth + closest_object.ydepth*closest_object.ydepth);
+        float depth = sqrt(closest_object.xdepth*closest_object.xdepth + closest_object.ydepth*closest_object.ydepth);
 
         // Check whether there is stopline.
         if (isStopLine(img_undistorted))
@@ -329,18 +332,18 @@ void Driving::imageCallback(const sensor_msgs::Image::ConstPtr& message)
 
 void Driving::scanCallback(const sensor_msgs::LaserScan::ConstPtr& message)
 {
-    lidar_data_ = message -> ranges;
+    lidar_data_ = message -> ranges;  // size = 505
 
-    int front_idx = ((FRONT_OBS_ANGLE_ * 0.5) / 360) * lidar_data_.size();  // 45 degree
-    int side_idx = 0.25 * lidar_data_.size();  // 90 degree
+    uint16_t front_idx = static_cast<uint16_t>(((FRONT_OBS_ANGLE_ * 0.5) / 360) * 505);  // 45 degree
+    uint16_t side_idx = static_cast<uint16_t>(0.25 * 505);  // 90 degree
 
     front_obs_cnt_ = 0;
     left_obs_cnt_ = 0;
     right_obs_cnt_ = 0;
 
-    for (size_t i = 0; i < lidar_data_.size(); ++i)
+    for (uint16_t i = 0; i < 505; ++i)
     {
-        if (((i < front_idx) || (i > lidar_data_.size() - front_idx)) &&
+        if (((i < front_idx) || (i > 505 - front_idx)) &&
             ((lidar_data_[i] > 0.01) && (lidar_data_[i] < FRONT_OBS_DEPTH_)))
         {
             front_obs_cnt_++;
@@ -352,7 +355,7 @@ void Driving::scanCallback(const sensor_msgs::LaserScan::ConstPtr& message)
             left_obs_cnt_++;
         }
 
-        if ((i > lidar_data_.size() - side_idx) &&
+        if ((i > 505 - side_idx) &&
             ((lidar_data_[i] > 0.01) && (lidar_data_[i] < SIDE_OBS_DEPTH_)))
         {
             right_obs_cnt_++;
@@ -379,7 +382,9 @@ void Driving::drawBboxes(const cv::Mat& input_img, cv::Mat& output_img,
         // class, score, depth
         std::string id = LABELS_[pred.id];
         std::string score = std::to_string(pred.prob + 0.005).substr(0, 4);
-        std::string depth = std::to_string(static_cast<int>(sqrt(pred.xdepth*pred.xdepth + pred.ydepth*pred.ydepth) + 0.5));
+        std::string depth = std::to_string(
+            static_cast<uint16_t>(sqrt(pred.xdepth*pred.xdepth + pred.ydepth*pred.ydepth) + 0.5)
+        );
         std::string text = id + " " + score + " " + depth + "cm";
         cv::Size text_size = cv::getTextSize(text, cv::FONT_HERSHEY_SIMPLEX, 0.6, 2, nullptr);
 
@@ -396,7 +401,7 @@ void Driving::drawLanes(cv::Mat& input_img, const std::vector<cv::Point>& lanes_
 {
     int y = std::min(lanes_position[0].y, lanes_position[1].y);
     cv::Point center_position((lanes_position[0].x + lanes_position[1].x) * 0.5 - 15, y);
-    cv::Point img_center(static_cast<int>(input_img.cols * 0.5), y);
+    cv::Point img_center(static_cast<uint16_t>(input_img.cols * 0.5), y);
 
     cv::circle(input_img, lanes_position[0], 6, cv::Scalar(0, 255, 0), -1);
     cv::circle(input_img, lanes_position[1], 6, cv::Scalar(0, 255, 0), -1);
@@ -480,11 +485,10 @@ void Driving::undistortImg(const cv::Mat& input_img, cv::Mat& output_img)
     cv::remap(input_img, output_img, map1, map2, cv::INTER_LINEAR);
 }
 
-void Driving::undistortLanesPosition(const std::pair<int, int>& lanes_position,
+void Driving::undistortLanesPosition(const std::pair<float, float>& lanes_position,
                                            const int32_t y,
                                            std::vector<cv::Point>& undistorted_lanes_position)
 {
-    // lane_pos int? float?
     std::vector<cv::Point2f> distorted_pts = {cv::Point2f(lanes_position.first, y),
                                               cv::Point2f(lanes_position.second, y)};
     std::vector<cv::Point2f> normalized_undistorted_pts;
@@ -497,11 +501,15 @@ void Driving::undistortLanesPosition(const std::pair<int, int>& lanes_position,
 
     for (int i = 0; i < 2; ++i)
     {
-        undistorted_lanes_position[i].x = static_cast<int>(camera_matrix(0, 0) * normalized_undistorted_pts[i].x + camera_matrix(0, 2) + 30);
-        undistorted_lanes_position[i].y = static_cast<int>(camera_matrix(1, 1) * normalized_undistorted_pts[i].y + camera_matrix(1, 2));
+        undistorted_lanes_position[i].x = static_cast<uint16_t>(
+            camera_matrix(0, 0) * normalized_undistorted_pts[i].x + camera_matrix(0, 2) + 30
+        );
+        undistorted_lanes_position[i].y = static_cast<uint16_t>(
+            camera_matrix(1, 1) * normalized_undistorted_pts[i].y + camera_matrix(1, 2)
+        );
         // undistorted_lanes_position.emplace_back(
-        //     static_cast<int>(camera_matrix(0, 0) * normalized_undistorted_pts[i].x + camera_matrix(0, 2) + 30),
-        //     static_cast<int>(camera_matrix(1, 1) * normalized_undistorted_pts[i].y + camera_matrix(1, 2))
+        //     static_cast<uint16_t>(camera_matrix(0, 0) * normalized_undistorted_pts[i].x + camera_matrix(0, 2) + 30),
+        //     static_cast<uint16_t>(camera_matrix(1, 1) * normalized_undistorted_pts[i].y + camera_matrix(1, 2))
         // );
     }
 }

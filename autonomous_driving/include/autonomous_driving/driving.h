@@ -24,7 +24,6 @@ public:
     using ControllerPtr = typename PIDController::Ptr;  // Pointer type of PIDController
     using DetectorPtr = typename LaneDetector::Ptr;  // Pointer type of LaneDetecter(It's up to you)
 
-    static constexpr int32_t STEERING_ANGLE_LIMIT = 50;  // Xycar Steering Angle Limit
     static constexpr double FPS = 33.0;  // FPS
     /**
      * @brief Construct a new Driving object
@@ -42,6 +41,8 @@ public:
     void run();
 
 private:
+    static constexpr int32_t STEERING_ANGLE_LIMIT = 50.0;  // Xycar Steering Angle Limit
+
     /**
      * @brief Set the parameters from config file
      *
@@ -91,10 +92,10 @@ private:
     // LiDAR variables
     void scanCallback(const sensor_msgs::LaserScan::ConstPtr& message);
     std::vector<float> lidar_data_;
-    float front_obs_cnt_, left_obs_cnt_, right_obs_cnt_;
-    float FRONT_OBS_ANGLE_, FRONT_OBS_DEPTH_, FRONT_OBS_CNT_THRESH_;
-    float SIDE_OBS_DEPTH_, SIDE_OBS_CNT_THRESH_;
-    int last_obs_pos_ = -1;
+    uint16_t front_obs_cnt_, left_obs_cnt_, right_obs_cnt_;
+    float FRONT_OBS_ANGLE_, FRONT_OBS_DEPTH_, SIDE_OBS_DEPTH_;
+    uint16_t FRONT_OBS_CNT_THRESH_, SIDE_OBS_CNT_THRESH_;
+    int8_t last_obs_pos_ = -1;
 
     // Object Detection variables
     std::vector<std::string> LABELS_;
@@ -113,7 +114,7 @@ private:
                     const yolov3_trt_ros::BoundingBoxes& predictions);
     std::vector<cv::Scalar> COLORS_;
 
-    void undistortLanesPosition(const std::pair<int, int>& lanes_position,
+    void undistortLanesPosition(const std::pair<float, float>& lanes_position,
                                 const int32_t y,
                                 std::vector<cv::Point>& undistorted_lanes_position);
     void drawLanes(cv::Mat& input_img, const std::vector<cv::Point>& lanes_position);
@@ -134,7 +135,8 @@ private:
      */
     bool isStopLine(const cv::Mat& input_img);
 
-    int last_obj_class_ = -1;
+    int8_t last_obj_class_ = -1;
+    uint16_t IMAGE_WIDTH_, IMAGE_HEIGHT_, YOLO_RESOLUTION_;
     float RESIZING_X_, RESIZING_Y_;
     float OBJ_DEPTH_THRESH_;
 
