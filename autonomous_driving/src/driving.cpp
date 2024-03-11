@@ -46,11 +46,6 @@ void Driving::getConfig(const YAML::Node& config)
     SIDE_OBS_CNT_THRESH_ = config["LIDAR"]["SIDE_OBS_THRESH"].as<uint16_t>();
 
     // Object Detection
-    IMAGE_WIDTH_ = config["IMAGE"]["WIDTH"].as<uint16_t>();
-    IMAGE_HEIGHT_ = config["IMAGE"]["HEIGHT"].as<uint16_t>();
-    YOLO_RESOLUTION_ = config["OBJECT"]["YOLO_RESOLUTION"].as<uint16_t>();
-    RESIZING_X_ = IMAGE_WIDTH_ / static_cast<float>(YOLO_RESOLUTION_);
-    RESIZING_Y_ = IMAGE_HEIGHT_ / static_cast<float>(YOLO_RESOLUTION_);
     OBJ_DEPTH_THRESH_ = config["OBJECT"]["XY_DEPTH"].as<float>();
 
     IS_DEBUGGING_ = config["DEBUG"].as<bool>();
@@ -92,7 +87,7 @@ void Driving::run()
         bool is_left_detected, is_right_detected;
         std::tie(is_left_detected, is_right_detected) = is_each_lane_detected;
 
-        float gap = (center_lane_position - IMAGE_WIDTH_ * 0.5);
+        float gap = (center_lane_position - frame_.cols * 0.5);
         float steering_angle = PID_->getPIDOutput(gap);
         steering_angle = (steering_angle > 50.0) ? 50.0 : (steering_angle < -50.0) ? -50.0 : steering_angle;
         tmp_deceleration_step_ = std::round(std::abs(gap) * 0.1) * DECELERATION_STEP_;
@@ -150,8 +145,8 @@ void Driving::run()
 
 
         yolov3_trt_ros::BoundingBox closest_object;
-        getClosestObject(predictions_, closest_object);
-        float depth = sqrt(closest_object.xdepth*closest_object.xdepth + closest_object.ydepth*closest_object.ydepth);
+        float depth;
+        Tools_->getClosestObject(predictions_, closest_object, depth);
 
         // Check whether there is stopline.
         if (is_stopline)
@@ -360,41 +355,6 @@ void Driving::yoloCallback(const yolov3_trt_ros::BoundingBoxes::ConstPtr& messag
 {
     predictions_ = *message;
     // std::cout << predictions_.bbox[0] << std::endl;
-}
-
-void Driving::getClosestObject(
-    const yolov3_trt_ros::BoundingBoxes& predictions, yolov3_trt_ros::BoundingBox& closest_object)
-{
-    // Initialize
-    closest_object.prob = -1;
-    closest_object.xmin = -1;
-    closest_object.ymin = -1;
-    closest_object.xmax = -1;
-    closest_object.ymax = -1;
-    closest_object.id = -1;
-    closest_object.xdepth = -1;
-    closest_object.ydepth = -1;
-
-    // Assign
-    for (const auto& pred : predictions.bbox)
-    {
-        if (pred.id == 4)
-        {
-            continue;  // Skip if class is "car" which is unnecessary class.
-        }
-
-        if ((closest_object.id == -1) || (closest_object.ydepth > pred.ydepth))
-        {
-            closest_object.prob = pred.prob;
-            closest_object.xmin = pred.xmin * RESIZING_X_;
-            closest_object.ymin = pred.ymin * RESIZING_Y_;
-            closest_object.xmax = pred.xmax * RESIZING_X_;
-            closest_object.ymax = pred.ymax * RESIZING_Y_;
-            closest_object.id = pred.id;
-            closest_object.xdepth = pred.xdepth;
-            closest_object.ydepth = pred.ydepth;
-        }
-    }
 }
 
 void Driving::controlSpeed(const float steering_angle)

@@ -75,15 +75,6 @@ private:
     void scanCallback(const sensor_msgs::LaserScan::ConstPtr& message);
     void yoloCallback(const yolov3_trt_ros::BoundingBoxes::ConstPtr& message);
 
-    /**
-     * @brief get the closest object detected by YOLO
-     *
-     * @param[in] predictions predictions detected by YOLO
-     * @param[in] closest_object closest object among predictions
-     */
-    void getClosestObject(
-        const yolov3_trt_ros::BoundingBoxes& predictions, yolov3_trt_ros::BoundingBox& closest_object);
-
     // ROS Variables
     uint32_t QUEUE_SIZE_;  // Max queue size for message
     ros::NodeHandle NodeHandler_;  // Node Hanlder for ROS. In this case Detector and Controller
@@ -113,8 +104,6 @@ private:
     int8_t last_obs_pos_ = -1;
 
     // Object Detection variables
-    uint16_t IMAGE_WIDTH_, IMAGE_HEIGHT_, YOLO_RESOLUTION_;
-    float RESIZING_X_, RESIZING_Y_;
     float OBJ_DEPTH_THRESH_;
     yolov3_trt_ros::BoundingBoxes predictions_;
     int8_t last_obj_class_ = -1;

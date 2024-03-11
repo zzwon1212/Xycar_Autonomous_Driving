@@ -114,17 +114,11 @@ void Tools::isStopline(const cv::Mat img, bool& is_stopline, std::vector<cv::Vec
     cv::Mat img_gray, img_blur, img_bin, img_edge;
     cv::Rect roi(140, 370, 360, 40);
     cv::Mat img_cropped = img(roi);
-    // std::vector<cv::Vec4f> lines;
     cv::cvtColor(img_cropped, img_gray, cv::COLOR_BGR2GRAY);
     cv::GaussianBlur(img_gray, img_blur, cv::Size(), 1.0);
     cv::threshold(img_blur, img_bin, 190, 255, cv::THRESH_BINARY_INV);
     cv::Canny(img_bin, img_edge, 50, 150);
     cv::HoughLinesP(img_edge, stoplines, 1, CV_PI/180, 40, 160, 50);
-
-    // if (IS_DEBUGGING_)
-    // {
-        // cv::imshow("hough", img_cropped);
-    // }
 
     float slope;
     if (stoplines.empty())
@@ -164,11 +158,51 @@ void Tools::show(
     std::vector<cv::Point>& undistorted_lanes_position,
     const yolov3_trt_ros::BoundingBoxes& predictions)
 {
-    drawStoplines(img, stoplines);
+    // drawStoplines(img, stoplines);
     undistortLanesPosition(lanes_position, y, undistorted_lanes_position);
     drawLanes(img, undistorted_lanes_position);
     drawBboxes(img, predictions);
     cv::imshow("Result", img);
     cv::waitKey(1);
+}
+
+void Tools::getClosestObject(
+    const yolov3_trt_ros::BoundingBoxes& predictions,
+    yolov3_trt_ros::BoundingBox& closest_object,
+    float& depth)
+{
+    // Initialize
+    closest_object.prob = -1;
+    closest_object.xmin = -1;
+    closest_object.ymin = -1;
+    closest_object.xmax = -1;
+    closest_object.ymax = -1;
+    closest_object.id = -1;
+    closest_object.xdepth = -1;
+    closest_object.ydepth = -1;
+
+    // Assign
+    for (const auto& pred : predictions.bbox)
+    {
+        if (pred.id == 4)
+        {
+            continue;  // Skip if class is "car" which is unnecessary class.
+        }
+
+        if ((closest_object.id == -1) || (closest_object.ydepth > pred.ydepth))
+        {
+            closest_object.prob = pred.prob;
+            closest_object.xmin = pred.xmin * RESIZING_X_;
+            closest_object.ymin = pred.ymin * RESIZING_Y_;
+            closest_object.xmax = pred.xmax * RESIZING_X_;
+            closest_object.ymax = pred.ymax * RESIZING_Y_;
+            closest_object.id = pred.id;
+            closest_object.xdepth = pred.xdepth;
+            closest_object.ydepth = pred.ydepth;
+        }
+    }
+
+    depth = sqrt(closest_object.xdepth*closest_object.xdepth
+                 + closest_object.ydepth*closest_object.ydepth);
 }
 }  // namespace xycar

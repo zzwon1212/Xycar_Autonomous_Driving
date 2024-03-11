@@ -4,6 +4,7 @@
 #include "yaml-cpp/yaml.h"
 #include "opencv2/opencv.hpp"
 
+#include <yolov3_trt_ros/BoundingBox.h>
 #include <yolov3_trt_ros/BoundingBoxes.h>
 
 namespace xycar
@@ -21,6 +22,8 @@ public:
      * @brief decide whether there is stop line
      *
      * @param[in] img input image
+     * @param[in] is_stopline whether there is stopline in input image
+     * @param[in] stoplines detected stoplines
      */
     void isStopline(const cv::Mat img, bool& is_stopline, std::vector<cv::Vec4f>& stoplines);
     void show(
@@ -30,6 +33,18 @@ public:
         const uint16_t y,
         std::vector<cv::Point>& undistorted_lanes_position,
         const yolov3_trt_ros::BoundingBoxes& predictions);
+
+    /**
+     * @brief get the closest object detected by YOLO
+     *
+     * @param[in] predictions predictions detected by YOLO
+     * @param[in] closest_object closest object among predictions
+     * @param[in] depth depth of closest object
+     */
+    void getClosestObject(
+        const yolov3_trt_ros::BoundingBoxes& predictions,
+        yolov3_trt_ros::BoundingBox& closest_object,
+        float& depth);
 
 private:
     void getConfig(const YAML::Node& config);
