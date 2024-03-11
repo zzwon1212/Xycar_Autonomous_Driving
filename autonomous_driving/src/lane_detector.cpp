@@ -15,9 +15,11 @@ void LaneDetector::getConfig(const YAML::Node& config)
 {
     // Image
     IMG_WIDTH_ = config["IMAGE"]["WIDTH"].as<uint16_t>();
-    Y_OFFSET_ = config["IMAGE"]["Y_OFFSET"].as<uint16_t>();
-    Y_GAP_ = config["IMAGE"]["Y_GAP"].as<uint16_t>();
-    Y_GAIN_ = config["IMAGE"]["Y_GAIN"].as<float>();
+
+    // Xycar
+    Y_OFFSET_ = config["XYCAR"]["Y_OFFSET"].as<uint16_t>();
+    Y_GAP_ = config["XYCAR"]["Y_GAP"].as<uint16_t>();
+    Y_GAIN_ = config["XYCAR"]["Y_GAIN"].as<float>();
 
     // Canny
     LOW_THRESH_ = config["CANNY"]["LOW_THRESHOLD"].as<uint16_t>();
