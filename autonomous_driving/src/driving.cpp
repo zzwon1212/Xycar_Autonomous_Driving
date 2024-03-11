@@ -96,17 +96,26 @@ void Driving::run()
         float steering_angle = PID_->getPIDOutput(gap);
         steering_angle = (steering_angle > 50.0) ? 50.0 : (steering_angle < -50.0) ? -50.0 : steering_angle;
         tmp_deceleration_step_ = std::round(std::abs(gap) * 0.1) * DECELERATION_STEP_;
-        // std::cout << steering_angle << std::endl;
-        // std::cout << " " << std::endl;
+
 
         cv::Mat frame_undistorted;
         Tools_->undistortImg(frame_, frame_undistorted);
 
+        bool is_stopline;
+        std::vector<cv::Vec4f> stoplines;
+        Tools_->isStopline(frame_undistorted, is_stopline, stoplines);
+
         if (IS_DEBUGGING_)
         {
-            cv::Mat result;
+            cv::Mat img_result = frame_undistorted.clone();
             std::vector<cv::Point> undistorted_lanes_position = {cv::Point(60, 400), cv::Point(580, 400)};
-            Tools_->show(frame_, result, lanes_position, LaneDetector_->moving_y_offset_, undistorted_lanes_position, predictions_);
+            Tools_->show(
+                img_result,
+                stoplines,
+                lanes_position,
+                LaneDetector_->moving_y_offset_,
+                undistorted_lanes_position,
+                predictions_);
         }
 
         xycar_msgs::xycar_motor motor_message;
@@ -145,7 +154,7 @@ void Driving::run()
         float depth = sqrt(closest_object.xdepth*closest_object.xdepth + closest_object.ydepth*closest_object.ydepth);
 
         // Check whether there is stopline.
-        if (isStopLine(frame_undistorted))
+        if (is_stopline)
         {
             std::cout << "STOPLINE" << std::endl;
 
@@ -409,58 +418,5 @@ void Driving::drive(const float steering_angle)
     LaneDetector_->setYOffset(XYCAR_SPEED_);
     motor_message.speed = std::round(XYCAR_SPEED_);
     PublisherMotor_.publish(motor_message);
-}
-
-bool Driving::isStopLine(const cv::Mat& input_img)
-{
-    // cv::Mat camera_matrix = (cv::Mat_<double>(3, 3) << 352.494189, 0.000000,   295.823760,
-    //                                                    0.000000,   353.504572, 239.649689,
-    //                                                    0.000000,   0.000000,   1.000000);
-    // cv::Mat dist_coeffs = (cv::Mat_<double>(1, 5) << -0.318744, 0.088199, 0.000167, 0.000699, 0.000000);
-    // cv::Mat map1, map2, undistorted;
-    // cv::initUndistortRectifyMap(camera_matrix, dist_coeffs, cv::Mat(), cv::Mat(),
-    //                             cv::Size(input_img.cols, input_img.rows), CV_8UC1, map1, map2);
-    // cv::remap(input_img, undistorted, map1, map2, cv::INTER_LINEAR);
-
-    cv::Mat img_gray, img_blur, img_bin, img_edge;
-    cv::Rect roi(140, 370, 360, 40);
-    cv::Mat img_cropped = input_img(roi);
-    std::vector<cv::Vec4f> lines;
-    cv::cvtColor(img_cropped, img_gray, cv::COLOR_BGR2GRAY);
-    cv::GaussianBlur(img_gray, img_blur, cv::Size(), 1.0);
-    cv::threshold(img_blur, img_bin, 190, 255, cv::THRESH_BINARY_INV);
-    cv::Canny(img_bin, img_edge, 50, 150);
-    cv::HoughLinesP(img_edge, lines, 1, CV_PI/180, 40, 160, 50);
-
-    for (size_t i = 0; i < lines.size(); i++)
-    {
-        cv::Vec4i l = lines[i];
-        cv::line(img_cropped, cv::Point(l[0], l[1]), cv::Point(l[2], l[3]),
-                 cv::Scalar(rand() % 256, rand() % 256, rand() % 256), 2, cv::LINE_AA);
-    }
-
-    if (IS_DEBUGGING_)
-    {
-        // cv::imshow("hough", img_cropped);
-    }
-
-    float slope;
-    if (lines.empty())
-    {
-        slope = -1.0;
-    }
-    else
-    {
-        slope = (lines[0][3] - lines[0][1]) / (lines[0][0] - lines[0][2] + 0.001);
-    }
-
-    if (abs(slope) < 0.025)
-    {
-        return true;
-    }
-    else
-    {
-        return false;
-    }
 }
 }  // namespace xycar

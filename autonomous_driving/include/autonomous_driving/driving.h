@@ -84,13 +84,6 @@ private:
     void getClosestObject(
         const yolov3_trt_ros::BoundingBoxes& predictions, yolov3_trt_ros::BoundingBox& closest_object);
 
-    /**
-     * @brief decide whether there is stop line
-     *
-     * @param[in] input_img input image
-     */
-    bool isStopLine(const cv::Mat& input_img);
-
     // ROS Variables
     uint32_t QUEUE_SIZE_;  // Max queue size for message
     ros::NodeHandle NodeHandler_;  // Node Hanlder for ROS. In this case Detector and Controller

@@ -16,9 +16,16 @@ public:
     Tools(const YAML::Node& config);
 
     void undistortImg(const cv::Mat& input_img, cv::Mat& output_img);
+
+    /**
+     * @brief decide whether there is stop line
+     *
+     * @param[in] img input image
+     */
+    void isStopline(const cv::Mat img, bool& is_stopline, std::vector<cv::Vec4f>& stoplines);
     void show(
-        const cv::Mat& input_img,
-        cv::Mat& output_img,
+        cv::Mat& img,
+        const std::vector<cv::Vec4f> stoplines,
         const std::pair<float, float>& lanes_position,
         const uint16_t y,
         std::vector<cv::Point>& undistorted_lanes_position,
@@ -26,6 +33,7 @@ public:
 
 private:
     void getConfig(const YAML::Node& config);
+    void drawStoplines(cv::Mat& img, const std::vector<cv::Vec4f> stoplines);
     void undistortLanesPosition(
         const std::pair<float, float>& lanes_position,
         const uint16_t y,
@@ -38,7 +46,7 @@ private:
      * @param[in] predictions predictions detected by YOLO
      */
     void drawBboxes(cv::Mat& img, const yolov3_trt_ros::BoundingBoxes& predictions);
-    void drawLanes(const std::vector<cv::Point>& lanes_position, cv::Mat& img);
+    void drawLanes(cv::Mat& img, const std::vector<cv::Point>& lanes_position);
 
     std::vector<std::string> LABELS_;
     std::vector<cv::Scalar> COLORS_;

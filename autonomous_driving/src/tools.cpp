@@ -91,7 +91,7 @@ void Tools::drawBboxes(cv::Mat& img, const yolov3_trt_ros::BoundingBoxes& predic
     }
 }
 
-void Tools::drawLanes(const std::vector<cv::Point>& lanes_position, cv::Mat& img)
+void Tools::drawLanes(cv::Mat& img, const std::vector<cv::Point>& lanes_position)
 {
     int y = std::min(lanes_position[0].y, lanes_position[1].y);
     cv::Point center_position((lanes_position[0].x + lanes_position[1].x) * 0.5 - 15, y);
@@ -109,19 +109,66 @@ void Tools::drawLanes(const std::vector<cv::Point>& lanes_position, cv::Mat& img
                 cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(255, 200, 0), 2);
 }
 
+void Tools::isStopline(const cv::Mat img, bool& is_stopline, std::vector<cv::Vec4f>& stoplines)
+{
+    cv::Mat img_gray, img_blur, img_bin, img_edge;
+    cv::Rect roi(140, 370, 360, 40);
+    cv::Mat img_cropped = img(roi);
+    // std::vector<cv::Vec4f> lines;
+    cv::cvtColor(img_cropped, img_gray, cv::COLOR_BGR2GRAY);
+    cv::GaussianBlur(img_gray, img_blur, cv::Size(), 1.0);
+    cv::threshold(img_blur, img_bin, 190, 255, cv::THRESH_BINARY_INV);
+    cv::Canny(img_bin, img_edge, 50, 150);
+    cv::HoughLinesP(img_edge, stoplines, 1, CV_PI/180, 40, 160, 50);
+
+    // if (IS_DEBUGGING_)
+    // {
+        // cv::imshow("hough", img_cropped);
+    // }
+
+    float slope;
+    if (stoplines.empty())
+    {
+        slope = -1;
+    }
+    else
+    {
+        slope = (stoplines[0][3] - stoplines[0][1]) / (stoplines[0][0] - stoplines[0][2] + 1e-6);
+    }
+
+    is_stopline = (abs(slope) < 0.025) ? true : false;
+}
+
+void Tools::drawStoplines(cv::Mat& img, const std::vector<cv::Vec4f> stoplines)
+{
+    for (size_t i = 0; i < stoplines.size(); i++)
+    {
+        cv::Vec4i l = stoplines[i];
+
+        float slope = (l[3] - l[1]) / (l[0] - l[2] + 1e-6);
+
+        if (abs(slope) < 0.025)
+        {
+            cv::line(img,
+                     cv::Point(l[0] + 140, l[1] + 370), cv::Point(l[2] + 140, l[3] + 370),
+                     cv::Scalar(0, 0, 255), 2, cv::LINE_AA);
+        }
+    }
+}
+
 void Tools::show(
-    const cv::Mat& input_img,
-    cv::Mat& output_img,
+    cv::Mat& img,
+    const std::vector<cv::Vec4f> stoplines,
     const std::pair<float, float>& lanes_position,
     const uint16_t y,
     std::vector<cv::Point>& undistorted_lanes_position,
     const yolov3_trt_ros::BoundingBoxes& predictions)
 {
-    undistortImg(input_img, output_img);
+    drawStoplines(img, stoplines);
     undistortLanesPosition(lanes_position, y, undistorted_lanes_position);
-    drawBboxes(output_img, predictions);
-    drawLanes(undistorted_lanes_position, output_img);
-    cv::imshow("tmp", output_img);
+    drawLanes(img, undistorted_lanes_position);
+    drawBboxes(img, predictions);
+    cv::imshow("Result", img);
     cv::waitKey(1);
 }
 }  // namespace xycar
