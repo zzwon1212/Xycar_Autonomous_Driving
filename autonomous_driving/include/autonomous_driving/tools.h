@@ -25,12 +25,12 @@ public:
      * @param[in] is_stopline whether there is stopline in input image
      * @param[in] stoplines detected stoplines
      */
-    void isStopline(const cv::Mat img, bool& is_stopline, std::vector<cv::Vec4f>& stoplines);
+    void isStopline(const cv::Mat& img, bool& is_stopline, std::vector<cv::Vec4f>& stoplines);
     void show(
         cv::Mat& img,
-        const std::vector<cv::Vec4f> stoplines,
+        const std::vector<cv::Vec4f>& stoplines,
         const std::pair<float, float>& lanes_position,
-        const uint16_t y,
+        const uint16_t& y,
         std::vector<cv::Point>& undistorted_lanes_position,
         const yolov3_trt_ros::BoundingBoxes& predictions);
 
@@ -48,10 +48,10 @@ public:
 
 private:
     void getConfig(const YAML::Node& config);
-    void drawStoplines(cv::Mat& img, const std::vector<cv::Vec4f> stoplines);
+    void drawStoplines(cv::Mat& img, const std::vector<cv::Vec4f>& stoplines);
     void undistortLanesPosition(
         const std::pair<float, float>& lanes_position,
-        const uint16_t y,
+        const uint16_t& y,
         std::vector<cv::Point>& undistorted_lanes_position);
 
     /**

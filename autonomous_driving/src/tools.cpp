@@ -39,7 +39,7 @@ void Tools::undistortImg(const cv::Mat& input_img, cv::Mat& output_img)
 }
 
 void Tools::undistortLanesPosition(const std::pair<float, float>& lanes_position,
-                                   const uint16_t y,
+                                   const uint16_t& y,
                                    std::vector<cv::Point>& undistorted_lanes_position)
 {
     std::vector<cv::Point2f> distorted_pts = {cv::Point2f(lanes_position.first, y),
@@ -109,7 +109,7 @@ void Tools::drawLanes(cv::Mat& img, const std::vector<cv::Point>& lanes_position
                 cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(255, 200, 0), 2);
 }
 
-void Tools::isStopline(const cv::Mat img, bool& is_stopline, std::vector<cv::Vec4f>& stoplines)
+void Tools::isStopline(const cv::Mat& img, bool& is_stopline, std::vector<cv::Vec4f>& stoplines)
 {
     cv::Mat img_gray, img_blur, img_bin, img_edge;
     cv::Rect roi(140, 370, 360, 40);
@@ -133,7 +133,7 @@ void Tools::isStopline(const cv::Mat img, bool& is_stopline, std::vector<cv::Vec
     is_stopline = (abs(slope) < 0.025) ? true : false;
 }
 
-void Tools::drawStoplines(cv::Mat& img, const std::vector<cv::Vec4f> stoplines)
+void Tools::drawStoplines(cv::Mat& img, const std::vector<cv::Vec4f>& stoplines)
 {
     for (size_t i = 0; i < stoplines.size(); i++)
     {
@@ -152,9 +152,9 @@ void Tools::drawStoplines(cv::Mat& img, const std::vector<cv::Vec4f> stoplines)
 
 void Tools::show(
     cv::Mat& img,
-    const std::vector<cv::Vec4f> stoplines,
+    const std::vector<cv::Vec4f>& stoplines,
     const std::pair<float, float>& lanes_position,
-    const uint16_t y,
+    const uint16_t& y,
     std::vector<cv::Point>& undistorted_lanes_position,
     const yolov3_trt_ros::BoundingBoxes& predictions)
 {
