@@ -13,7 +13,7 @@ public:
 
     LaneDetector(const YAML::Node& config);
 
-    std::pair<std::pair<float, float>, std::pair<bool, bool>> getLaneInfo(const cv::Mat& frame);
+    std::pair<std::pair<float, float>, std::pair<bool, bool>> getLaneInfo(const cv::Mat& img);
 
     void setYOffset(float speed);
     uint16_t moving_y_offset_;

@@ -60,6 +60,7 @@ Driving::~Driving()
 {
     delete PID_;
     delete LaneDetector_;
+    delete Tools_;
 }
 
 void Driving::run()
@@ -98,8 +99,8 @@ void Driving::run()
         // std::cout << steering_angle << std::endl;
         // std::cout << " " << std::endl;
 
-        cv::Mat img_undistorted;
-        Tools_->undistortImg(frame_, img_undistorted);
+        cv::Mat frame_undistorted;
+        Tools_->undistortImg(frame_, frame_undistorted);
 
         if (IS_DEBUGGING_)
         {
@@ -144,7 +145,7 @@ void Driving::run()
         float depth = sqrt(closest_object.xdepth*closest_object.xdepth + closest_object.ydepth*closest_object.ydepth);
 
         // Check whether there is stopline.
-        if (isStopLine(img_undistorted))
+        if (isStopLine(frame_undistorted))
         {
             std::cout << "STOPLINE" << std::endl;
 

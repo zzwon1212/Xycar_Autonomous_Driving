@@ -147,22 +147,22 @@ std::tuple<cv::Point2f, cv::Point2f, bool, bool> LaneDetector::getLinePosition(
     return std::make_tuple(left, right, is_left_detected, is_right_detected);
 }
 
-std::pair<std::pair<float, float>, std::pair<bool, bool>> LaneDetector::getLaneInfo(const cv::Mat& frame)
+std::pair<std::pair<float, float>, std::pair<bool, bool>> LaneDetector::getLaneInfo(const cv::Mat& img)
 {
     // Set ROI
     // @@@@@@@@@@@@@@@@@@@@@@@@2 TODO: Find more efficient code
-    cv::Mat mask = cv::Mat::zeros(frame.size(), CV_8UC1);
+    cv::Mat mask = cv::Mat::zeros(img.size(), CV_8UC1);
     std::vector<cv::Point> square;
     square.push_back(cv::Point(0, moving_y_offset_ + Y_GAP_));
     square.push_back(cv::Point(0, moving_y_offset_ - Y_GAP_));
-    square.push_back(cv::Point(frame.cols, moving_y_offset_ - Y_GAP_));
-    square.push_back(cv::Point(frame.cols, moving_y_offset_ + Y_GAP_));
+    square.push_back(cv::Point(img.cols, moving_y_offset_ - Y_GAP_));
+    square.push_back(cv::Point(img.cols, moving_y_offset_ + Y_GAP_));
     cv::fillConvexPoly(mask, &square[0], 4, cv::Scalar(255));
 
     // Get HoughLines
     cv::Mat img_gray, img_blur, img_edge, output, img_binary;
     std::vector<cv::Vec4f> lines;
-    cv::cvtColor(frame, img_gray, cv::COLOR_BGR2GRAY);
+    cv::cvtColor(img, img_gray, cv::COLOR_BGR2GRAY);
     cv::GaussianBlur(img_gray, img_blur, cv::Size(), 2.0);
     cv::Canny(img_blur, img_edge, LOW_THRESH_, HIGH_THRESH_);
     cv::bitwise_and(img_edge, mask, output, mask=mask);  // @@@@@@@@@@ OUTPUT NAME ???
