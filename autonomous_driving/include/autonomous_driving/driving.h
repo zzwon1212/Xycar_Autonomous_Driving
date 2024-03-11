@@ -10,6 +10,7 @@
 
 #include "autonomous_driving/lane_detector.h"
 #include "autonomous_driving/PID_controller.h"
+#include "autonomous_driving/tools.h"
 
 namespace xycar
 {
@@ -38,11 +39,13 @@ public:
     void run();
 
 private:
+    using DetectorPtr = typename LaneDetector::Ptr;  // Pointer type of LaneDetecter
     using ControllerPtr = typename PIDController::Ptr;  // Pointer type of PIDController
-    using DetectorPtr = typename LaneDetector::Ptr;  // Pointer type of LaneDetecter(It's up to you)
+    using ToolsPtr = typename Tools::Ptr;
 
     DetectorPtr LaneDetector_;
-    ControllerPtr PID_;  // PID Class for Control
+    ControllerPtr PID_;
+    ToolsPtr Tools_;
 
     static constexpr double FPS = 33.0;  // FPS
     static constexpr float STEERING_ANGLE_LIMIT = 50.0;  // Xycar Steering Angle Limit
@@ -71,23 +74,6 @@ private:
     void imageCallback(const sensor_msgs::Image::ConstPtr& message);
     void scanCallback(const sensor_msgs::LaserScan::ConstPtr& message);
     void yoloCallback(const yolov3_trt_ros::BoundingBoxes::ConstPtr& message);
-
-    void undistortImg(const cv::Mat& input_img, cv::Mat& output_img);
-
-    /**
-     * @brief draw bounding boxes detected by YOLO
-     *
-     * @param[in] input_img input image
-     * @param[in] output_img output image
-     * @param[in] predictions predictions detected by YOLO
-     */
-    void drawBboxes(const cv::Mat& input_img, cv::Mat& output_img, const yolov3_trt_ros::BoundingBoxes& predictions);
-
-    void undistortLanesPosition(
-        const std::pair<float, float>& lanes_position,
-        const int32_t y,
-        std::vector<cv::Point>& undistorted_lanes_position);
-    void drawLanes(const std::vector<cv::Point>& lanes_position, cv::Mat& input_output_img);
 
     /**
      * @brief get the closest object detected by YOLO
@@ -134,8 +120,6 @@ private:
     int8_t last_obs_pos_ = -1;
 
     // Object Detection variables
-    std::vector<std::string> LABELS_;
-    std::vector<cv::Scalar> COLORS_;
     uint16_t IMAGE_WIDTH_, IMAGE_HEIGHT_, YOLO_RESOLUTION_;
     float RESIZING_X_, RESIZING_Y_;
     float OBJ_DEPTH_THRESH_;

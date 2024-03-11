@@ -10,10 +10,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  # message_generation #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
   roscpp
   sensor_msgs
-  # std_msgs @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
   xycar_msgs
 )
 find_package(yaml-cpp REQUIRED)
@@ -114,6 +112,7 @@ add_library(modules
   src/driving.cpp
   src/lane_detector.cpp
   src/PID_controller.cpp
+  src/tools.cpp
 )
 
 ## Declare a C++ executable
