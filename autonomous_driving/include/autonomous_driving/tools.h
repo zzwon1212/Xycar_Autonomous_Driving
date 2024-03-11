@@ -32,6 +32,7 @@ public:
         const std::pair<float, float>& lanes_position,
         const uint16_t& y,
         std::vector<cv::Point>& undistorted_lanes_position,
+        const bool is_first_frame,
         const yolov3_trt_ros::BoundingBoxes& predictions);
 
     /**
@@ -61,7 +62,7 @@ private:
      * @param[in] predictions predictions detected by YOLO
      */
     void drawBboxes(cv::Mat& img, const yolov3_trt_ros::BoundingBoxes& predictions);
-    void drawLanes(cv::Mat& img, const std::vector<cv::Point>& lanes_position);
+    void drawLanes(cv::Mat& img, std::vector<cv::Point>& lanes_position, const bool is_first_frame);
 
     std::vector<std::string> LABELS_;
     std::vector<cv::Scalar> COLORS_;

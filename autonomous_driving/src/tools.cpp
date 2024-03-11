@@ -57,10 +57,6 @@ void Tools::undistortLanesPosition(const std::pair<float, float>& lanes_position
             CAMERA_MATRIX_(0, 0) * normalized_undistorted_pts[i].x + CAMERA_MATRIX_(0, 2) + 30);
         undistorted_lanes_position[i].y = static_cast<int16_t>(
             CAMERA_MATRIX_(1, 1) * normalized_undistorted_pts[i].y + CAMERA_MATRIX_(1, 2));
-        // undistorted_lanes_position.emplace_back(
-        //     static_cast<uint16_t>(camera_matrix(0, 0) * normalized_undistorted_pts[i].x + camera_matrix(0, 2) + 30),
-        //     static_cast<uint16_t>(camera_matrix(1, 1) * normalized_undistorted_pts[i].y + camera_matrix(1, 2))
-        // );
     }
 }
 
@@ -91,8 +87,14 @@ void Tools::drawBboxes(cv::Mat& img, const yolov3_trt_ros::BoundingBoxes& predic
     }
 }
 
-void Tools::drawLanes(cv::Mat& img, const std::vector<cv::Point>& lanes_position)
+void Tools::drawLanes(cv::Mat& img, std::vector<cv::Point>& lanes_position, const bool is_first_frame)
 {
+    if (is_first_frame)
+    {
+        lanes_position[0] = cv::Point(60, 400);
+        lanes_position[1] = cv::Point(580, 400);
+    }
+
     int y = std::min(lanes_position[0].y, lanes_position[1].y);
     cv::Point center_position((lanes_position[0].x + lanes_position[1].x) * 0.5 - 15, y);
     cv::Point img_center(static_cast<uint16_t>(img.cols * 0.5), y);
@@ -156,11 +158,12 @@ void Tools::show(
     const std::pair<float, float>& lanes_position,
     const uint16_t& y,
     std::vector<cv::Point>& undistorted_lanes_position,
+    const bool is_first_frame,
     const yolov3_trt_ros::BoundingBoxes& predictions)
 {
     // drawStoplines(img, stoplines);
     undistortLanesPosition(lanes_position, y, undistorted_lanes_position);
-    drawLanes(img, undistorted_lanes_position);
+    drawLanes(img, undistorted_lanes_position, is_first_frame);
     drawBboxes(img, predictions);
     cv::imshow("Result", img);
     cv::waitKey(1);

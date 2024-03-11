@@ -64,6 +64,7 @@ Driving::~Driving()
 void Driving::run()
 {
     ros::Rate rate(FPS);
+    bool is_first_frame = true;
 
     while (ros::ok())
     {
@@ -113,6 +114,7 @@ void Driving::run()
                 lanes_position,
                 LaneDetector_->moving_y_offset_,
                 undistorted_lanes_position,
+                is_first_frame,
                 predictions_);
         }
 
@@ -311,6 +313,8 @@ void Driving::run()
 
         // Drive only using lanes if there are no other situations.
         drive(steering_angle);
+
+        is_first_frame = false;
     }
 }
 

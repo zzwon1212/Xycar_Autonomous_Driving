@@ -5,7 +5,7 @@ namespace xycar
 LaneDetector::LaneDetector(const YAML::Node& config)
 {
     getConfig(config);
-    prev_left_ = cv::Point(0, moving_y_offset_);
+    prev_left_ = cv::Point(0, Y_OFFSET_);
     prev_right_ = cv::Point(IMG_WIDTH_, Y_OFFSET_);
     leftC_ = 0;
     rightC_ = 0;
@@ -115,18 +115,18 @@ std::tuple<cv::Point2f, cv::Point2f, bool, bool> LaneDetector::getLinePosition(
     // If points are too close
     if (abs(right.x - left.x) < 300.0)  // 300 100
     {
-        if (rightC_ != 0)
-        {
-            right.x = 640.0;
-            // right.x = left.x +300;
-            prev_right_ = right;
-        }
-
         if (leftC_ != 0)
         {
             left.x = 0.0;
             // left.x = right.x -300;
             prev_left_ = left;
+        }
+
+        if (rightC_ != 0)
+        {
+            right.x = 640.0;
+            // right.x = left.x +300;
+            prev_right_ = right;
         }
     }
 
