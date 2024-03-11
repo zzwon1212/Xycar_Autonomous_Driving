@@ -1,8 +1,8 @@
 #ifndef LANE_DETECTOR_H_
 #define LANE_DETECTOR_H_
 
+#include "yaml-cpp/yaml.h"
 #include "opencv2/opencv.hpp"
-#include <yaml-cpp/yaml.h>
 
 namespace xycar
 {
