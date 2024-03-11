@@ -8,12 +8,10 @@ Driving::Driving()
     NodeHandler_.getParam("config_path", config_path);
     YAML::Node config = YAML::LoadFile(config_path);
 
-    LaneDetector_ = new LaneDetector(config);
-    PID_ = new PIDController(config["PID"]["P_GAIN"].as<float>(),
-                             config["PID"]["I_GAIN"].as<float>(),
-                             config["PID"]["D_GAIN"].as<float>());
-    Tools_ = new Tools(config);
     getConfig(config);
+    LaneDetector_ = new LaneDetector(config);
+    PID_ = new PIDController(PID_P_, PID_I_, PID_D_);
+    Tools_ = new Tools(config);
 
     SubscriberImg_ = NodeHandler_.subscribe(SUB_TOPIC_IMG_, QUEUE_SIZE_, &Driving::imageCallback, this);
     SubscriberScan_ = NodeHandler_.subscribe(SUB_TOPIC_SCAN_, QUEUE_SIZE_, &Driving::scanCallback, this);
@@ -37,6 +35,11 @@ void Driving::getConfig(const YAML::Node& config)
     XYCAR_SPEED_CONTROL_THRESH_ = config["XYCAR"]["SPEED_CONTROL_THRESHOLD"].as<float>();
     DECELERATION_STEP_ = config["XYCAR"]["DECELERATION_STEP"].as<float>();
     ACCELERATION_STEP_ = config["XYCAR"]["ACCELERATION_STEP"].as<float>();
+
+    // PID
+    PID_P_ = config["PID"]["P_GAIN"].as<float>();
+    PID_I_ = config["PID"]["I_GAIN"].as<float>();
+    PID_D_ = config["PID"]["D_GAIN"].as<float>();
 
     // LiDAR
     FRONT_OBS_ANGLE_ = config["LIDAR"]["FRONT_ANGLE"].as<float>();

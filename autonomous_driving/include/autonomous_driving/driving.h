@@ -96,6 +96,9 @@ private:
     float DECELERATION_STEP_, ACCELERATION_STEP_;  // How much would (de)accelrate xycar depending on threshold
     float tmp_deceleration_step_;
 
+    // PID variables
+    float PID_P_, PID_I_, PID_D_;
+
     // LiDAR variables
     float FRONT_OBS_ANGLE_, FRONT_OBS_DEPTH_, SIDE_OBS_DEPTH_;
     uint16_t FRONT_OBS_CNT_THRESH_, SIDE_OBS_CNT_THRESH_;
