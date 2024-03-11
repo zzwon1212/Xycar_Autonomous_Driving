@@ -53,9 +53,9 @@ void Tools::undistortLanesPosition(const std::pair<float, float>& lanes_position
     // Project normal plane to image plane
     for (int i = 0; i < 2; ++i)
     {
-        undistorted_lanes_position[i].x = static_cast<uint16_t>(
+        undistorted_lanes_position[i].x = static_cast<int16_t>(
             CAMERA_MATRIX_(0, 0) * normalized_undistorted_pts[i].x + CAMERA_MATRIX_(0, 2) + 30);
-        undistorted_lanes_position[i].y = static_cast<uint16_t>(
+        undistorted_lanes_position[i].y = static_cast<int16_t>(
             CAMERA_MATRIX_(1, 1) * normalized_undistorted_pts[i].y + CAMERA_MATRIX_(1, 2));
         // undistorted_lanes_position.emplace_back(
         //     static_cast<uint16_t>(camera_matrix(0, 0) * normalized_undistorted_pts[i].x + camera_matrix(0, 2) + 30),
