@@ -26,14 +26,21 @@ public:
      * @param[in] stoplines detected stoplines
      */
     void isStopline(const cv::Mat& img, bool& is_stopline, std::vector<cv::Vec4f>& stoplines);
-    void show(
-        cv::Mat& img,
-        const std::vector<cv::Vec4f>& stoplines,
+
+    void drawStoplines(cv::Mat& img, const std::vector<cv::Vec4f>& stoplines);
+    void undistortLanesPosition(
         const std::pair<float, float>& lanes_position,
         const uint16_t& y,
-        std::vector<cv::Point>& undistorted_lanes_position,
-        const bool is_first_frame,
-        const yolov3_trt_ros::BoundingBoxes& predictions);
+        std::vector<cv::Point>& undistorted_lanes_position);
+
+    /**
+     * @brief draw bounding boxes detected by YOLO
+     *
+     * @param[in] img input and output image
+     * @param[in] predictions predictions detected by YOLO
+     */
+    void drawBboxes(cv::Mat& img, const yolov3_trt_ros::BoundingBoxes& predictions);
+    void drawLanes(cv::Mat& img, std::vector<cv::Point>& lanes_position, const bool is_first_frame);
 
     /**
      * @brief get the closest object detected by YOLO
@@ -49,20 +56,6 @@ public:
 
 private:
     void getConfig(const YAML::Node& config);
-    void drawStoplines(cv::Mat& img, const std::vector<cv::Vec4f>& stoplines);
-    void undistortLanesPosition(
-        const std::pair<float, float>& lanes_position,
-        const uint16_t& y,
-        std::vector<cv::Point>& undistorted_lanes_position);
-
-    /**
-     * @brief draw bounding boxes detected by YOLO
-     *
-     * @param[in] img input and output image
-     * @param[in] predictions predictions detected by YOLO
-     */
-    void drawBboxes(cv::Mat& img, const yolov3_trt_ros::BoundingBoxes& predictions);
-    void drawLanes(cv::Mat& img, std::vector<cv::Point>& lanes_position, const bool is_first_frame);
 
     std::vector<std::string> LABELS_;
     std::vector<cv::Scalar> COLORS_;

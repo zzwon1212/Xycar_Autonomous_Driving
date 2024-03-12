@@ -152,23 +152,6 @@ void Tools::drawStoplines(cv::Mat& img, const std::vector<cv::Vec4f>& stoplines)
     }
 }
 
-void Tools::show(
-    cv::Mat& img,
-    const std::vector<cv::Vec4f>& stoplines,
-    const std::pair<float, float>& lanes_position,
-    const uint16_t& y,
-    std::vector<cv::Point>& undistorted_lanes_position,
-    const bool is_first_frame,
-    const yolov3_trt_ros::BoundingBoxes& predictions)
-{
-    // drawStoplines(img, stoplines);
-    undistortLanesPosition(lanes_position, y, undistorted_lanes_position);
-    drawLanes(img, undistorted_lanes_position, is_first_frame);
-    drawBboxes(img, predictions);
-    cv::imshow("Result", img);
-    cv::waitKey(1);
-}
-
 void Tools::getClosestObject(
     const yolov3_trt_ros::BoundingBoxes& predictions,
     yolov3_trt_ros::BoundingBox& closest_object,

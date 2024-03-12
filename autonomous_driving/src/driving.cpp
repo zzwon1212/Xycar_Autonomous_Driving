@@ -107,15 +107,14 @@ void Driving::run()
         if (IS_DEBUGGING_)
         {
             cv::Mat img_result = frame_undistorted.clone();
+            // Tools_->drawStoplines(img_result, stoplines);
             std::vector<cv::Point> undistorted_lanes_position = {cv::Point(60, 400), cv::Point(580, 400)};
-            Tools_->show(
-                img_result,
-                stoplines,
-                lanes_position,
-                LaneDetector_->moving_y_offset_,
-                undistorted_lanes_position,
-                is_first_frame,
-                predictions_);
+            Tools_->undistortLanesPosition(lanes_position, LaneDetector_->moving_y_offset_, undistorted_lanes_position);
+            Tools_->drawLanes(img_result, undistorted_lanes_position, is_first_frame);
+            Tools_->drawBboxes(img_result, predictions_);
+
+            cv::imshow("Result", img_result);
+            cv::waitKey(1);
         }
 
         xycar_msgs::xycar_motor motor_message;
