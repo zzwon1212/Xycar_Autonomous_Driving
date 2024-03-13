@@ -64,6 +64,8 @@ Driving::~Driving()
 void Driving::run()
 {
     ros::Rate rate(FPS);
+    float ms_per_frame = 1 / FPS;
+
     bool is_first_frame = true;
 
     while (ros::ok())
@@ -113,8 +115,8 @@ void Driving::run()
             Tools_->drawLanes(img_result, undistorted_lanes_position, is_first_frame);
             Tools_->drawBboxes(img_result, predictions_);
 
-            cv::imshow("Result", img_result);
-            cv::waitKey(1);
+            // cv::imshow("Result", img_result);
+            // cv::waitKey(1);
         }
 
         xycar_msgs::xycar_motor motor_message;
@@ -127,6 +129,7 @@ void Driving::run()
         //     std::cout << "FRONT OBSTALCE, " << front_obs_cnt_ << std::endl;
         //     motor_message.speed = 0.0;
         //     PublisherMotor_.publish(motor_message);
+        //     rate.sleep();
         //     continue;  // Skip to next frame.
         // }
         // // If there is obstacle at left or right side, avoid it (turn for fixed time).
@@ -144,6 +147,7 @@ void Driving::run()
 
         //     // Remember current obstacle position to return later.
         //     last_obs_pos_ = (right_obs_cnt_ > SIDE_OBS_CNT_THRESH_);  // left obs -> right avoid
+        //     rate.sleep();
         //     continue;  // Skip to next frame.
         // }
 
@@ -247,6 +251,7 @@ void Driving::run()
                 // ros::Duration(1).sleep();
             }
 
+            rate.sleep();
             continue;  // Skip to next frame.
         }
 
@@ -269,6 +274,7 @@ void Driving::run()
         //     motor_message.angle = (2*last_obs_pos_ - 1) * 40.0;
         //     motor_message.speed = XYCAR_SPEED_;
         //     PublisherMotor_.publish(motor_message);
+        //     rate.sleep();
         //     continue;  // Skip to next frame.
         // }
 
@@ -292,6 +298,8 @@ void Driving::run()
             }
             motor_message.speed = XYCAR_SPEED_;
             PublisherMotor_.publish(motor_message);
+
+            rate.sleep();
             continue;  // Skip to next frame.
         }
 
@@ -306,6 +314,8 @@ void Driving::run()
                 motor_message.speed = XYCAR_SPEED_;
                 PublisherMotor_.publish(motor_message);
                 last_obj_class_ = closest_object.id;
+
+                rate.sleep();
                 continue;
             }
         }
@@ -314,6 +324,8 @@ void Driving::run()
         drive(steering_angle);
 
         is_first_frame = false;
+
+        rate.sleep();
     }
 }
 

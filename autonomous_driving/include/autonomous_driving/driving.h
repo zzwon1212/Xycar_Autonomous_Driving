@@ -47,7 +47,7 @@ private:
     ControllerPtr PID_;
     ToolsPtr Tools_;
 
-    static constexpr double FPS = 33.0;  // FPS
+    static constexpr double FPS = 30.0;  // FPS
     static constexpr float STEERING_ANGLE_LIMIT = 50.0;  // Xycar Steering Angle Limit
 
     /**
