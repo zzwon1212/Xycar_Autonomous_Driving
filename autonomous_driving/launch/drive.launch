@@ -1,7 +1,7 @@
 <launch>
     <!-- Rosbag -->
     <node name="rosbag_player" pkg="rosbag" type="play"
-          args="-r 1 -s 11 $(find autonomous_driving)/../image_raw.bag"/>
+          args="-r 1 -s 12.5 $(find autonomous_driving)/../image_raw.bag"/>
 
     <!-- Config -->
     <param name="config_path" type="str" value="$(find autonomous_driving)/config/config.yaml"/>

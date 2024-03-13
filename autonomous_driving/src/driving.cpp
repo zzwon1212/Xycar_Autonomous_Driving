@@ -63,8 +63,17 @@ Driving::~Driving()
 
 void Driving::run()
 {
+    // cv::VideoWriter output(
+    //     "/workspace/Programmers/xycar_ws/src/xycar.mp4",
+    //     cv::VideoWriter::fourcc('m', 'p', '4', 'v'),
+    //     FPS, cv::Size(640, 480));
+
+    // if (!output.isOpened())
+    // {
+    //     std::cout << "VideoWriter fails to open!" << std::endl;
+    // }
+
     ros::Rate rate(FPS);
-    float ms_per_frame = 1 / FPS;
 
     bool is_first_frame = true;
 
@@ -117,6 +126,8 @@ void Driving::run()
 
             // cv::imshow("Result", img_result);
             // cv::waitKey(1);
+
+            // output << img_result;
         }
 
         xycar_msgs::xycar_motor motor_message;
@@ -327,6 +338,9 @@ void Driving::run()
 
         rate.sleep();
     }
+
+    // output.release();
+    // cv::destroyAllWindows();
 }
 
 void Driving::imageCallback(const sensor_msgs::Image::ConstPtr& message)
@@ -372,7 +386,6 @@ void Driving::scanCallback(const sensor_msgs::LaserScan::ConstPtr& message)
 void Driving::yoloCallback(const yolov3_trt_ros::BoundingBoxes::ConstPtr& message)
 {
     predictions_ = *message;
-    // std::cout << predictions_.bbox[0] << std::endl;
 }
 
 void Driving::controlSpeed(const float steering_angle)
