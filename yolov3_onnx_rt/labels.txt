@@ -1,0 +1,8 @@
+Left
+Right
+Crosswalk
+Stop
+Car
+Red
+Green
+Yellow
