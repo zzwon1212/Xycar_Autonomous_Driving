@@ -1,0 +1,28 @@
+numpy
+torch
+torchvision
+tensorboard
+tensorboardX
+torchsummary
+pynvml
+imgaug
+onnx
+onnxruntime
+terminaltables
+tqdm
+
+### My environment
+# AMI: Deep Learning AMI GPU PyTorch 1.12.1 (Ubuntu 20.04) 20221102
+# Docker: nvcr.io/nvidia/pytorch:21.12-py3
+# CUDA == 11.6
+# Python == 3.8.10
+# numpy == 1.23.0
+# torch == 1.11
+# torchvision == 0.11
+# tensorboard
+# tensorboardX
+# torchsummary
+# pynvml == 11.0.0
+# imgaug == 0.4.0
+# onnx == 1.10.1
+# onnxruntime == 1.16.3
