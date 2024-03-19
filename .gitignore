@@ -1,5 +1,3 @@
-*.trt
-*.pth
 *.zip
 .DS_Store
 *.swp
@@ -10,5 +8,15 @@ __pycache__
 .project
 .settings
 
-# rosbag
+# video
 *.bag
+*.mp4
+
+# YOLO
+yolov3_pytorch/datasets/train
+yolov3_pytorch/datasets/valid
+*.pth
+*.weights
+*.onnx
+*.trt
+
