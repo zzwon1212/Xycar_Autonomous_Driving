@@ -31,7 +31,7 @@ void LaneDetector::getConfig(const YAML::Node& config)
     MAX_GAP_ = config["HOUGH"]["MAX_GAP"].as<uint16_t>();
 }
 
-std::pair<std::vector<float>, std::vector<float>> LaneDetector::divideLeftRight(const std::vector<cv::Vec4f>& lines)
+std::pair<std::vector<float>, std::vector<float>> LaneDetector::separateLeftRight(const std::vector<cv::Vec4f>& lines)
 {
     std::vector<float> left_x_at_Y_offset, right_x_at_Y_offset;
     float slope;
@@ -170,7 +170,7 @@ std::pair<std::pair<float, float>, std::pair<bool, bool>> LaneDetector::getLaneI
     cv::HoughLinesP(img_binary, lines, 1, CV_PI/180, MIN_PIXEL_, MIN_LINE_, MAX_GAP_);
 
     std::vector<float> left_lines, right_lines;
-    std::tie(left_lines, right_lines) = divideLeftRight(lines);
+    std::tie(left_lines, right_lines) = separateLeftRight(lines);
 
     cv::Point2f left, right;
     bool is_left_detected, is_right_detected;
