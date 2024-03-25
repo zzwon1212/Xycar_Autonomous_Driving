@@ -73,6 +73,9 @@ RUN mkdir -p /home/opencv && \
 
 
 ######################## Python3 ###########################
+RUN apt-get install \
+    python3-pip
+
 RUN pip3 install \
     rospkg \
     Pillow \
