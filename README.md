@@ -4,9 +4,17 @@
 ```
 git clone https://github.com/zzwon1212/Xycar_Autonomous_Driving.git xycar_ws/src
 
-docker build --no-cache --progress=tty --force-rm -f ros-opencv.dockerfile -t ros-opencv:base xycar_ws/src
+docker build --no-cache --progress=tty --force-rm -f xycar_ws/src/ros-opencv.dockerfile -t ros-opencv:base .
 
-docker run -it -v "$(pwd)":/workspace -v /tmp/.X11-unix:/tmp/.X11-unix --name "ROS_OpenCV" --shm-size=14G -p 8888:8888 -e DISPLAY=$DISPLAY ros-opencv:base /bin/bash
+docker run -it \
+           --volume "$(pwd)":/workspace \
+           --volume /tmp/.X11-unix:/tmp/.X11-unix \
+           --name "ROS_OpenCV" \
+           --shm-size 14G \
+           --publish 8888:8888 \
+           --env DISPLAY=$DISPLAY \
+           ros-opencv:base \
+           /bin/bash
 ```
 
 ## 0.2. In container
