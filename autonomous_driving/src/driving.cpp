@@ -124,8 +124,8 @@ void Driving::run()
             Tools_->drawLanes(img_result, undistorted_lanes_position, is_first_frame);
             Tools_->drawBboxes(img_result, predictions_);
 
-            // cv::imshow("Result", img_result);
-            // cv::waitKey(1);
+            cv::imshow("Result", img_result);
+            cv::waitKey(1);
 
             // output << img_result;
         }
