@@ -53,7 +53,7 @@ import tensorrt as trt
 import onnx
 import common
 import argparse
-from PIL import Image,ImageDraw
+from PIL import Image, ImageDraw
 
 from data_processing import PreprocessYOLO, PostprocessYOLO, ALL_CATEGORIES
 
@@ -153,11 +153,10 @@ def get_engine(onnx_file_path, engine_file_path="", input_resolution_yolov3_wh=[
             network.get_input(0).shape = [1, 3, input_resolution_yolov3_wh[0], input_resolution_yolov3_wh[1]] #temporary hard coding
             print('Completed parsing of ONNX file')
             print('Building an engine from file {}; this may take a while...'.format(onnx_file_path))
-            plan = builder.build_serialized_network(network, config)
-            engine = runtime.deserialize_cuda_engine(plan)
+            engine = builder.build_cuda_engine(network)
             print("Completed creating Engine")
             with open(engine_file_path, "wb") as f:
-                f.write(plan)
+                f.write(engine.serialize())
             return engine
 
     if os.path.exists(engine_file_path):
@@ -196,10 +195,10 @@ def main():
     else:
         output_shapes = [(1, output_channels, height//32, width//32), (1, output_channels, height//16, width//16), (1, output_channels, height//8, width//8)]
 
-    postprocessor_args = {"yolo_masks": masks,                    # A list of 3 three-dimensional tuples for the YOLO masks
+    postprocessor_args = {"yolo_masks": masks,  # A list of 3 three-dimensional tuples for the YOLO masks
                           "yolo_anchors": anchors,
-                          "obj_threshold": 0.5,                                               # Threshold for object coverage, float value between 0 and 1
-                          "nms_threshold": 0.001,                                               # Threshold for non-max suppression algorithm, float value between 0 and 1
+                          "obj_threshold": 0.4,  # Threshold for object coverage, float value between 0 and 1
+                          "nms_threshold": 0.001,  # Threshold for non-max suppression algorithm, float value between 0 and 1
                           "yolo_input_resolution": input_resolution_yolov3_wh,
                           "num_class": num_class}
 
@@ -229,7 +228,7 @@ def main():
     print(boxes, classes, scores)
     img_show = np.array(np.transpose(image[0], (1,2,0)) * 255, dtype=np.uint8)
     obj_detected_img = draw_bboxes(Image.fromarray(img_show), boxes, scores, classes, ALL_CATEGORIES)
-    output_image_path = 'predict.png'
+    output_image_path = 'predicted.png'
     obj_detected_img.save(output_image_path, 'PNG')
     print('Saved image with bounding boxes of detected objects to {}.'.format(output_image_path))
 
