@@ -80,4 +80,5 @@ RUN pip3 install \
     pyyaml \
     torch==1.8.0 \
     torchvision==0.9.0 \
+    onnx==1.9.0 \
     gdown
