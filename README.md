@@ -4,9 +4,14 @@
 ```
 git clone https://github.com/zzwon1212/Xycar_Autonomous_Driving.git xycar_ws/src
 
-docker build --no-cache --progress=tty --force-rm -f xycar_ws/src/ros-opencv.dockerfile -t ros-opencv:base .
+docker build --no-cache \
+             --progress=tty \
+             --force-rm \
+             --file xycar_ws/src/ros-opencv.dockerfile \
+             --tag ros-opencv:base .
 
 docker run -it \
+           --gpus all \
            --volume "$(pwd)":/workspace \
            --volume /tmp/.X11-unix:/tmp/.X11-unix \
            --name "ROS_OpenCV" \
@@ -19,18 +24,13 @@ docker run -it \
 
 ## 0.2. In container
 ```
-cd /workspace/xycar_ws
-catkin_make || true && catkin_make
-source devel/setup.bash
-```
-Build your catkin wrokspace.
+mkdir /workspace/xycar_ws/src/model
+gdown https://drive.google.com/uc?id=15BVH0khkhQEJEHxrZmIOASWVtVg40j_e -O - --quiet | \
+tar -xz -C /workspace/xycar_ws/src/model
 
-
-```
-mkdir src/yolov3_trt_ros/model
-gdown https://drive.google.com/uc?id=15BVH0khkhQEJEHxrZmIOASWVtVg40j_e -O - --quiet | tar -xz -C src/yolov3_trt_ros/model
-
-gdown https://drive.google.com/uc?id=1Pf1bpd4mr-lMeqC3e6McHlktn2gJpRET -O - --quiet | tar -xz -C src
+mkdir /workspace/xycar_ws/src/video
+gdown https://drive.google.com/uc?id=1Pf1bpd4mr-lMeqC3e6McHlktn2gJpRET -O - --quiet | \
+tar -xz -C /workspace/xycar_ws/src/video
 ```
 You need model weights to predict objects and raw image rosbag from usb camera to watch the result. (optional: video from smartphone to concatenate with the result)
 
@@ -40,7 +40,25 @@ Download these by using `gdown` code above or using the given link below yoursel
 
 - raw image rosbag and video from smartphone [link](https://drive.google.com/file/d/1Pf1bpd4mr-lMeqC3e6McHlktn2gJpRET/view?usp=drive_link)
 
+```
+cd /workspace/xycar_ws/src/yolov3_onnx_rt
+python3 onnx_to_tensorrt.py --cfg yolov3-tiny_tstl_416.cfg \
+                            --onnx ../model/model_epoch4400_pretrained.onnx \
+                            --num_class 8 \
+                            --input_img sample.png
+```
 
+```
+cd /workspace/xycar_ws
+catkin_make || true && catkin_make
+source devel/setup.bash
+```
+Build your catkin wrokspace.
+
+
+git clone -b release/8.2 https://github.com/nvidia/TensorRT TensorRT
+cd TensorRT
+git submodule update --init --recursive
 
 
 # 0. Run
