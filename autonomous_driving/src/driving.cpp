@@ -120,7 +120,10 @@ void Driving::run()
             cv::Mat img_result = frame_undistorted.clone();
             // Tools_->drawStoplines(img_result, stoplines);
             std::vector<cv::Point> undistorted_lanes_position = {cv::Point(60, 400), cv::Point(580, 400)};
-            Tools_->undistortLanesPosition(lanes_position, LaneDetector_->moving_y_offset_, undistorted_lanes_position);
+            if (!is_stopline)
+            {
+                Tools_->undistortLanesPosition(lanes_position, LaneDetector_->moving_y_offset_, undistorted_lanes_position);
+            }
             Tools_->drawLanes(img_result, undistorted_lanes_position, is_first_frame);
             Tools_->drawBboxes(img_result, predictions_);
 
