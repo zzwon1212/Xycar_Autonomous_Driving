@@ -50,7 +50,8 @@ python3 onnx_to_tensorrt.py --cfg yolov3-tiny_tstl_416.cfg \
 
 ```
 cd /workspace/xycar_ws
-catkin_make || true && catkin_make
+catkin_make
+catkin_make
 source devel/setup.bash
 ```
 Build your catkin wrokspace.
@@ -71,8 +72,16 @@ If you want to watch opencv window, run `xhost +` at your local CMD.
 
 If you modify C++ files, run `catkin_make` at `/xycar_ws` directory to build again.
 
+***
 
-ALL OPTIONAL BELOW.
+# ALL OPTIONAL BELOW.
+
+```
+cd /workspace/xycar_ws/src
+python3 concatenate.py --input1 video/phone.mp4 \
+                       --input2 video/xycar.mp4 \
+                       --output video/concatenated.mp4
+```
 
 # 0. YOLO
 ## 0.1. Data
