@@ -25,7 +25,7 @@ docker run -it \
 ## 0.2. In container
 ```
 mkdir /workspace/xycar_ws/src/model
-gdown https://drive.google.com/uc?id=15BVH0khkhQEJEHxrZmIOASWVtVg40j_e -O - --quiet | \
+gdown https://drive.google.com/uc?id=1I5uhP0UB3CNB4ZMh9mtkG_536CkTGGE8 -O - --quiet | \
 tar -xz -C /workspace/xycar_ws/src/model
 
 mkdir /workspace/xycar_ws/src/video
@@ -36,7 +36,7 @@ You need model weights to predict objects and raw image rosbag from usb camera t
 
 Download these by using `gdown` code above or using the given link below yourself.
 
-- model weights [link](https://drive.google.com/file/d/15BVH0khkhQEJEHxrZmIOASWVtVg40j_e/view?usp=drive_link)
+- model weights [link](https://drive.google.com/file/d/1I5uhP0UB3CNB4ZMh9mtkG_536CkTGGE8/view?usp=drive_link)
 
 - raw image rosbag and video from smartphone [link](https://drive.google.com/file/d/1Pf1bpd4mr-lMeqC3e6McHlktn2gJpRET/view?usp=drive_link)
 
