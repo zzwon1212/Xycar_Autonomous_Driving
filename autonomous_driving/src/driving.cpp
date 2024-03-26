@@ -64,7 +64,7 @@ Driving::~Driving()
 void Driving::run()
 {
     // cv::VideoWriter output(
-    //     "/workspace/Programmers/xycar_ws/src/xycar.mp4",
+    //     "/workspace/xycar_ws/src/video/xycar.mp4",
     //     cv::VideoWriter::fourcc('m', 'p', '4', 'v'),
     //     FPS, cv::Size(640, 480));
 
