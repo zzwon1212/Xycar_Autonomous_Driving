@@ -12,15 +12,15 @@ def parse_args_():
     parser = argparse.ArgumentParser(description="CONVERT")
     parser.add_argument(
         "--input1", dest="input1", help="input video1 path", type=str,
-        default="/workspace/Programmers/xycar_ws/src/phone.mp4"
+        default="/workspace/xycar_ws/src/video/phone.mp4"
     )
     parser.add_argument(
         "--input2", dest="input2", help="input video2 path", type=str,
-        default="/workspace/Programmers/xycar_ws/src/xycar.mp4"
+        default="/workspace/xycar_ws/src/video/xycar.mp4"
     )
     parser.add_argument(
         "--output", dest="output", help="output video path", type=str,
-        default="/workspace/Programmers/xycar_ws/src/video_concatenated.mp4"
+        default="/workspace/xycar_ws/src/video/concatenated.mp4"
     )
 
     # if len(sys.argv) != 3:
