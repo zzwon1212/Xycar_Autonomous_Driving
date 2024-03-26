@@ -145,7 +145,7 @@ class yolov3_trt(object):
             boxes, classes, scores = self.postprocessor.process(trt_outputs, shape_orig_WH)
             latency = time.time() - start_time
             fps = 1 / latency
-            print(fps)
+            # print(fps)
 
             xdepth_list = []
             ydepth_list = []
