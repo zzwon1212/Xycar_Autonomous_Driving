@@ -1,4 +1,4 @@
-FROM nvidia/cuda:11.1.1-cudnn8-devel-ubuntu18.04
+FROM nvcr.io/nvidia/tensorrt:20.11-py3
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -24,7 +24,6 @@ RUN apt-get update && \
     ros-melodic-ros-base \
     ros-melodic-image-transport \
     ros-melodic-camera-info-manager
-    # ros-melodic-desktop-full
 
 ### Environment setup
 RUN echo "source /opt/ros/melodic/setup.bash" >> ~/.bashrc && \
@@ -66,15 +65,14 @@ RUN mkdir -p /home/opencv && \
           -D CMAKE_INSTALL_PREFIX=/usr/local \
           -D OPENCV_GENERATE_PKGCONFIG=ON \
           .. && \
-    make -j$(($(nproc)-1)) && \
+    make -j$(($(nproc))) && \
     make install && \
     cp lib/python3/cv2.cpython-36m-x86_64-linux-gnu.so /usr/lib/python3/dist-packages/
 
 
 
-######################## Python3 ###########################
-RUN apt-get install -y \
-    python3-pip
+# ######################## Python3 ###########################
+RUN sed -i '1s/python/python3/' $(which pip3)
 
 RUN pip3 install \
     rospkg \
