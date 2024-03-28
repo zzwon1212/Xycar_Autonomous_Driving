@@ -1,3 +1,4 @@
+[<img src="https://github.com/zzwon1212/Xycar_Autonomous_Driving/assets/61040406/3d0200eb-4bf0-486b-8ba9-e2b7da08f06a" width="80%" height="auto">](https://www.youtube.com/watch?v=0QzQx7FWpcM)
 
 # 0. Installation
 ## 0.1. In local
